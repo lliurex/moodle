@@ -1,0 +1,47 @@
+# Moodle uses customised versions of this library, see editor/tinymce/readme_moodle.txt
+# Moodle ships source; source for e.g. editor_plugin.js is shipped as editor_plugin_src.js
+moodle: source-is-missing lib/editor/tinymce/tiny_mce/3.5.11/*
+
+# Source of these small files is supplied.
+# (It _might_ be possible to use Debian's libjs-yui3-full (3.5.1-1) (jessie) instead.)
+moodle: source-is-missing lib/yuilib/3.17.2/datatype-date-format/lang/datatype-date-format*
+moodle: source-is-missing lib/yuilib/3.17.2/text-data-wordbreak/text-data-wordbreak-debug.js
+moodle: source-is-missing lib/yuilib/3.17.2/datatable-paginator/lang/datatable-paginator_fr.js
+moodle: source-is-missing lib/yuilib/3.17.2/autocomplete-list/lang/autocomplete-list_hu.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-yuiloader-dom-event/yui2-yuiloader-dom-event-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-yahoo-dom-event/yui2-yahoo-dom-event-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-utilities/yui2-utilities-debug.js
+
+# ttbomk, these files are their own source.  lintian bug reported Wed, 23 Sep 2015, https://bugs.debian.org/799861
+moodle: source-is-missing comment/comment.js
+moodle: source-is-missing lib/yuilib/3.17.2/handlebars-compiler/handlebars-compiler-debug.js
+moodle: source-is-missing lib/yuilib/3.17.2/loader-base/loader-base-debug.js
+moodle: source-is-missing lib/yuilib/3.17.2/loader/loader-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-editor/yui2-editor-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-profilerviewer/yui2-profilerviewer-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-swf/yui2-swf-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-uploader/yui2-uploader-debug.js
+
+# ttbomk, these files are their own source. lintian bug reported in #802028
+moodle: source-is-missing mod/forum/forum.js
+moodle: source-is-missing mod/imscp/module.js
+moodle: source-is-missing lib/jquery/ui-1.11.4/jquery-ui.js
+moodle: source-is-missing lib/yui/build/moodle-core-dock/moodle-core-dock-debug.js
+moodle: source-is-missing lib/yuilib/3.17.2/event-valuechange/event-valuechange-debug.js
+moodle: source-is-missing grade/grading/form/rubric/js/rubriceditor.js
+moodle: source-is-missing lib/yui/src/dock/js/dock.js
+moodle: source-is-missing lib/editor/tinymce/plugins/spellchecker/tinymce/editor_plugin.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-animation/yui2-animation-debug.js
+moodle: source-is-missing lib/yuilib/2in3/2.9.0/build/yui2-container/yui2-container-debug.js
+
+
+# Source of AMFTester.swf is in amf/testclient/AMFTester.mxml
+moodle: source-is-missing webservice/amf/testclient/AMFTester.swf
+
+# In debian/missing-sources/
+moodle: source-is-missing lib/flowplayer/flowplayer.controls-3.2.16.swf
+moodle: source-is-missing lib/flowplayer/flowplayer-3.2.18.swf
+
+# In debian/missing-sources/
+moodle: source-is-missing filter/tex/mimetex.linux
+moodle: source-is-missing filter/tex/mimetex.freebsd

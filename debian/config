@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+#set -x
+
+. /usr/share/debconf/confmodule
+
+if [ -f /etc/moodle/config.php ]; then
+	TEMPFILE=`tempfile`
+	cp /etc/moodle/config.php $TEMPFILE
+	#Change short tags into long tags
+	sed  -i '1 s/<?$/<?php/' $TEMPFILE
+	#We don't want config.php to include more files and possibly execute some code
+	sed  -i 's/include_once/\/\/include_once/' $TEMPFILE
+	#We don't want it to display any irrelevant messages
+	sed  -i 's/echo/\/\/echo/' $TEMPFILE
+        
+	dbc_load_include="php:$TEMPFILE"
+	dbc_load_include_args="-dCFG->dbname -sCFG->dbhost -pCFG->dbpass -uCFG->dbuser -tCFG->dbtype"
+
+fi
+
+db_input critical moodle/www || true
+db_go || true
+db_get moodle/www
+www="$RET"
+if [ ! `echo "$www" | egrep "^http"` ]; then
+        www="http://$www"
+	db_set moodle/www "$www"
+fi
+
+#	dbc_debug=1
+dbc_dbtypes="mysql, pgsql"
+dbc_authmethod_user="password"
+dbc_first_version="1.9.8-1"
+. /usr/share/dbconfig-common/dpkg/config
+dbc_go moodle $@
+

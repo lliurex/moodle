@@ -1,0 +1,22 @@
+#
+usr/bin/mimetex	usr/share/moodle/filter/tex/mimetex.linux
+#
+usr/share/php/libphp-phpmailer/class.phpmailer.php	usr/share/moodle/lib/phpmailer/class.phpmailer.php
+usr/share/php/libphp-phpmailer/class.smtp.php	usr/share/moodle/lib/phpmailer/class.smtp.php
+#
+usr/share/php/adodb	usr/share/moodle/lib/adodb
+#
+usr/share/php/HTMLPurifier	usr/share/moodle/lib/htmlpurifier/HTMLPurifier
+usr/share/php/HTMLPurifier.autoload.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.autoload.php
+usr/share/php/HTMLPurifier.auto.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.auto.php
+usr/share/php/HTMLPurifier.func.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.func.php
+usr/share/php/HTMLPurifier.includes.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.includes.php
+usr/share/php/HTMLPurifier.kses.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.kses.php
+usr/share/php/HTMLPurifier.path.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.path.phpx
+usr/share/php/HTMLPurifier.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.php
+usr/share/php/HTMLPurifier.safe-includes.php	usr/share/moodle/lib/htmlpurifier/HTMLPurifier.safe-includes.php
+#
+usr/share/php/tcpdf	usr/share/moodle/lib/tcpdf
+#
+usr/share/php/CAS.php	usr/share/moodle/auth/cas/CAS/CAS.php
+usr/share/php/CAS	usr/share/moodle/auth/cas/CAS/CAS

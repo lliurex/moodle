@@ -1,0 +1,59 @@
+- Next to Debian BTS, check https://bugzilla.redhat.com/buglist.cgi?component=moodle&order=bug_id%20DESC&query_format=advanced
+
+- Follow up to https://lists.debian.org/debian-devel/2014/11/msg00063.html
+  ( i.e.
+   Cc: Debian Moodle Package Maintainers <pkg-moodle-maintainers@lists.alioth.debian.org>
+   Subject: moodle_2.7.2-2_all.deb (was: Re: [moodle-packaging] experimental moodle .deb available, problem with gbp import-orig)
+   From: Joost van Baal-Ilić
+   Date: Mon, 3 Nov 2014 16:34:08 +0100
+   Message-id: <20141103153408.GH12497@dijkstra.uvt.nl>
+  )
+
+- contact upstream about how to help each other.
+
+- test / revamp / document git @ alioth.
+
+- List archive at http://lists.alioth.debian.org/cgi-bin/mailman/listinfo/pkg-moodle-maintainers
+  could better be public?
+
+- Revamp README.Debian.
+
+----------------
+
+Joost's build tips 'n tricks
+============================
+
+New upstream
+------------
+
+https://download.moodle.org/releases/security/
+
+open in javascript webbrowser: https://download.moodle.org/download.php/stable27/moodle-2.7.7.tgz
+
+joostvb@dijkstra:~% mv Downloads/moodle-2.7.9.tgz ~/local/src/moodle/
+
+joostvb@nusku:~/lo.../local/src/debian/moodle% tar zxf moodle-2.7.7.tgz
+joostvb@nusku:~/lo.../local/src/debian/moodle% mv moodle moodle-2.7.7+dfsg
+
+joostvb@nusku:~/lo...moodle/moodle-2.7.7+dfsg% make -f ~/git/moodle/debian/rules dfsg
+
+joostvb@dijkstra:~/lo.../local/src/debian/moodle% tar Jcf moodle_2.7.12+dfsg.orig.tar.xz moodle-2.7.12+dfsg
+
+joostvb@nusku:~/lo...moodle/moodle-2.7.7+dfsg% cp -a ~/git/moodle/debian .
+
+joostvb@nusku:~/lo...moodle/moodle-2.7.8+dfsg% cp -a ~/git/moodle/debian/changelog debian 
+
+joostvb@nusku:~/lo.../local/src/debian/moodle% diff -dur moodle-2.7.7+dfsg moodle-2.7.8+dfsg | less
+
+joostvb@nusku:~/lo...moodle/moodle-2.7.7+dfsg% debclean && debuild -us -uc
+
+(sid)joostvb@dijkstra:~/lo...moodle/moodle-2.7.5+dfsg% debclean && debuild    ( -us -uc )
+
+(sid)joostvb@dijkstra:local/src/debian/moodle% dupload --to anonymous-ftp-master ../moodle_2.*dsc
+
+joostvb@dijkstra:~/git/moodle% git log -v . | head -3
+commit 0c8b2412f417282aa8d3c1baf5145548e932459d
+
+joostvb@dijkstra:~/git/moodle% git tag -a -m 'uploaded to unstable' debian/2.7.7+dfsg-1  039113658b81a4d7db28c6911dd93c448718a2a0
+joostvb@dijkstra:~/git/moodle% git push --tags
+

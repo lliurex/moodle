@@ -1,0 +1,13 @@
+#
+# Missing sources for the Flowplayer video player from Flowplayer Ltd
+# (http://flash.flowplayer.org/): flash-release_3_2_18.tar.gz for
+# flowplayer-3.2.18.swf, flash-release_3_2_16.tar.gz for
+# lib/flowplayer/flowplayer.controls-3.2.16.swf.  Downloaded from
+# https://github.com/flowplayer/flash/releases.
+debian/missing-sources/flash-release_3_2_18.tar.gz
+debian/missing-sources/flash-release_3_2_16.tar.gz
+
+# Missing sources for filter/tex/mimetex.linux and
+# filter/tex/mimetex.freebsd.  Downloaded as mimetex 1.74-1
+# from "deb-src http://any.debian.mirror/debian/ unstable main"
+debian/missing-sources/mimetex_1.74.orig.tar.xz

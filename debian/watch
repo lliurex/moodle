@@ -1,0 +1,7 @@
+version=3
+opts=dversionmangle=s/\.dfsg(\.[0-9]+)?$//,downloadurlmangle=s/download.php/download.php\/direct/ \
+ https://download.moodle.org/releases/latest \
+ https://download.moodle.org/download.php/stable[0-9]+/moodle-([0-9.]+).tgz
+# http://download.moodle.org/ /download.php/stable[0-9]+/moodle-([0-9.]+).tgz
+# https://download.moodle.org/releases/supported/
+# https://download.moodle.org/download.php/direct/stable27/moodle-2.7.5.tgz

@@ -1,0 +1,143 @@
+UPGRADING FROM moodle 2.6.x TO 2.7.x
+------------------------------------
+
+Quick howto on upgrading, by Joost van Baal-Ilić, feb 2015.
+
+
+Maintenance mode
+- - - - - - - -
+
+Put site in maintenance mode; no web access will be allowed
+
+ # sudo -u www-data php /usr/share/moodle/admin/cli/maintenance.php --enable
+
+
+Database dumps
+- - - - - - -
+
+Make sure you have backups of your moodle database content.
+
+Make sure you have e.g.
+
+ 22 4 * * *  postgres  exec /usr/local/sbin/pgsqldumps
+
+in /etc/cron.d/pgsqldumps, and have e.g.
+
+ #! /bin/sh
+ set -e
+ umask 027
+ cd /var/backups/pgsql
+ for i in $(psql -Atc "SELECT datname FROM pg_catalog.pg_database WHERE datallowconn")
+ do
+        pg_dump -Fc -f $i.new $i
+        mv $i.new $i.pg
+ done
+
+in /usr/local/sbin/pgsqldumps .
+
+
+Backups of uploaded files
+- - - - - - - - - - - - -
+
+Backup all uploaded files, e.g. site and course files uploaded via Moodle
+located in moodledata:
+
+ grep dataroot /etc/moodle/config.php
+
+Typically, in /var/lib/moodle.
+
+
+Upgrade moodle software
+- - - - - - - - - - - -
+
+ # aptitude dist-upgrade
+
+
+Disable maintenance mode
+- - - - - - - - - - - -
+
+ # sudo -u www-data php /usr/share/moodle/admin/cli/maintenance.php --disable
+
+
+See also
+- - - - -
+
+See also https://docs.moodle.org/27/en/Upgrading
+
+
+
+
+
+
+
+------------------------------------------------------------
+NOTE: information below is likely obsolete; use with caution
+------------------------------------------------------------
+
+Moodle quickstart for Debian
+----------------------------
+
+INSTALLATION
+
+  After installation, Moodle will not be available/exposed by default.
+ 
+INSTALLATION WITH VIRTUAL HOST
+  If you would like to use a virtual host edit file (as a root user):
+  /etc/moodle/apache.vhost.conf
+  
+  * make sure that ServerName is correct (the host should match what
+    you provided during the installation).
+  * enter correct email address for ServerAdmin.
+
+  If you would like to keep your Apache logs separate for Moodle, change:
+  * ErrorLog
+  * CustomLog
+  to a location of your choice (i.e. ${APACHE_LOG_DIR}/moodle.error.log).
+
+  Save the file and link it to your Apache configuration:
+  ln -s /etc/moodle/apache.vhost.conf /etc/apache2/sites-enabled/moodle
+
+  Restart Apache:
+  /etc/init.d/apache restart
+
+  Go to the Moodle URL and finish installation - follow instructions on screen.
+ 
+VIRTUAL HOST EXAMPLE
+  To configure Moodle on the URL: www.example.com. The URL should be configured
+  already and point to the IP of the server.
+
+  During the package installation request www.example.com URL:
+  Please enter the URL for the Moodle site: www.example.com
+
+  Review /etc/moodle/apache.vhost.conf - it should contain valid entries already.
+
+  Execute as root:
+  ln -s /etc/moodle/apache.vhost.conf /etc/apache2/sites-enabled/moodle
+  /etc/init.d/apache restart
+  
+  Go to www.example.com and finish installation.
+
+INSTALLATION WITH ALIAS DIRECTIVE
+  If you decide to use Apache Alias directive, Moodle site will be available
+  for all the virtual hosts you may have.
+  You can use Alias only if the URL you have selected during package installation
+  has a non-empty path, e.g. www.example.com/moodle.
+
+  Apache configuration file is located at /etc/moodle/apache.conf to enable it:
+  ln -s /etc/moodle/apache.conf /etc/apache2/conf.d/moodle
+
+  Restart Apache:
+  /etc/init.d/apache2 restart
+
+  By default Moodle installation will only be available from localhost, to make 
+  it available from any IP, edit /etc/moodle/apache.conf and comment out the line:
+  #allow from all
+  and restart Apache.
+  
+UNINSTALLATION
+  After uninstalling Moodle, remove any symoblic links created for Apache, e.g.:
+  * /etc/apache2/sites-enabled/moodle
+  * /etc/apache2/conf.d/moodle
+
+--Tomasz Muras <tomasz.muras.eu>, May 2010
+
