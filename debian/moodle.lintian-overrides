@@ -1,0 +1,17 @@
+# we cannot use tinymce2, since Moodle ships a changed version of tinymce
+moodle: embedded-javascript-library usr/share/moodle/lib/editor/tinymce/tiny_mce/3.5.11/*
+
+# unfortunately, we can't use Debian's libmarkdown-php 1.0.2-1, since that ships just
+# /usr/share/php/markdown.php, while Moodle's lib/weblib.php has
+#    require_once($CFG->libdir .'/markdown/MarkdownInterface.php');
+#    require_once($CFG->libdir .'/markdown/Markdown.php');
+#    require_once($CFG->libdir .'/markdown/MarkdownExtra.php');
+# patching Moodle is too intrusive, imho --JvB
+moodle: embedded-php-library usr/share/moodle/lib/markdown/*
+
+# can't use Debian's libphp-simplepie (1.2.1-3): too old.  See https://bugs.debian.org/704431
+moodle: embedded-php-library usr/share/moodle/lib/simplepie/*
+
+# use bundled yui3. Unfortunately, version libjs-yui in Debian and of upstream
+# are not compatible (closes: #735312).
+moodle: embedded-javascript-library usr/share/moodle/lib/yuilib/3.17.2/*
