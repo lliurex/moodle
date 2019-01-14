@@ -20,7 +20,7 @@ source-is-missing moodle/filter/tex/mimetex.freebsd
 source-is-missing moodle/filter/tex/mimetex.linux
 source-is-missing moodle/lib/amd/src/adapter.js line length is 487 characters (>256)
 source-is-missing moodle/lib/amd/src/chartjs-lazy.js line length is 845 characters (>512)
-moodle source: license-problem-md5sum-non-free-file moodle/lib/tcpdf/include/sRGB.icc usual name is sRGB_IEC61966-2-1_black_scaled.icc. Does not allow modification See also org/sid/icc-profiles.
+moodle: license-problem-md5sum-non-free-file moodle/lib/tcpdf/include/sRGB.icc usual name is sRGB_IEC61966-2-1_black_scaled.icc. Does not allow modification See also org/sid/icc-profiles.
 source-is-missing moodle/lib/yuilib/3.17.2/frame/frame-debug.js line length is 301 characters (>256)
 source-is-missing moodle/lib/yuilib/3.17.2/handlebars-compiler/handlebars-compiler-debug.js line length is 572 characters (>512)
 source-is-missing moodle/lib/yuilib/3.17.2/text-data-wordbreak/text-data-wordbreak-debug.js line length is 3526 characters (>512)
