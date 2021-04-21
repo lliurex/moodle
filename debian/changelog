@@ -1,0 +1,1465 @@
+moodle (3.6.1-lliurex1) bionic; urgency=medium
+
+  * Initial version for bionic
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 09 Jan 2019 14:07:04 +0100
+
+moodle (3.0.3+dfsg-0ubuntu1+lliurex2) xenial; urgency=medium
+
+  * Fix postinst
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 03 May 2016 09:00:51 +0200
+
+moodle (3.0.3+dfsg-0ubuntu1+lliurex1) xenial; urgency=medium
+
+  * Fix postinst to php7.0
+  * Fix depends (php-zip)
+  * Applied a patch
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 02 May 2016 16:09:34 +0200
+
+moodle (3.0.3+dfsg-0ubuntu1) xenial; urgency=medium
+
+  [ Nishanth Aravamudan ]
+  * New upstream release, as only 3.0.1+ has PHP7 support
+    (LP: #1562172).
+    - https://docs.moodle.org/dev/Moodle_and_PHP7
+    - https://tracker.moodle.org/browse/MDL-50565
+    - update d/rules dfsg target.
+    - remove mdeploy*.php from d/install.
+    - d/lintian-overrides, d/source/lintian-overrides: update embedded
+      tinymce, yuilib, jquery versions.
+    - d/rules: update override_dh_lintian.
+  * d/control: update to PHP7.0 dependencies.
+  * d/watch: correct for current releases.
+
+  [ Steve Langasek ]
+  * Also update lintian overrides for binary packages.
+  * Remove some additional license files.
+  * Drop some no-longer-applicable lintian overrides.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 01 Apr 2016 22:08:56 -0700
+
+moodle (2.7.12+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released Jan 11, 2016.  Note that the
+    upstream 2.7 branch is supported for security fixes only until May 2017
+    (LTS).  Security issue fixed:
+    - (MSA-16-0001) CVE-2016-0724 Two enrolment-related web services don't check
+      course visibility.  Thanks Salvatore Bonaccorso. Closes: #811344
+    Other fixes and improvements:
+    - MDL-49473 - Logs export contains year
+    - MDL-52194 - Fixed Flowplayer not working with insecure configuration of
+      request_order
+    See https://docs.moodle.org/dev/Moodle_2.7.12_release_notes for more
+    details.
+  * debian/links, debian/rules: delegate creating symlinks to dh_link, via
+    debian/links.  This should fix a bug in upgrading: old obsolete symlinks are
+    kept.
+  * debian/rules: no longer install bennu/COPYRIGHT.txt, dragmath/COPYRIGHT.html
+    in usr/share/moodle/lib .
+  * debian/control: get rid of Breaks/Replaces moodle-book: moodle-book was only
+    shipped with squeeze (current oldoldstable).
+  * debian/control: remove Penny Leach <penny /a/ mjollnir 0 org>, Xavier Oswald
+    <xoswald@d.o> from Uploaders: I haven't seen any activity from them since
+    more than one year.  Penny, Xavier: you're very much invited to add yourself
+    again.
+  * debian/rules: no longer run debhelper in verbose mode.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 18 Jan 2016 08:38:29 +0100
+
+moodle (2.7.11+dfsg-2) unstable; urgency=high
+
+  * debian/rules: no longer link to content from
+    /usr/share/php-htmlpurifier/library/, but directly to
+    /usr/share/php/HTMLPurifier*.  This way, the php-htmlpurifier maintainers
+    can get rid of the compatibility symlink introduced in Debian Jessie.
+    Also: not only link to HTMLPurifier.php and HTMLPurifier.safe-includes.php,
+    but also to HTMLPurifier.autoload.php HTMLPurifier.auto.php
+    HTMLPurifier.func.php HTMLPurifier.includes.php HTMLPurifier.kses.php and
+    HTMLPurifier.path.php.  Thanks David Prévot.  Closes: #803175
+  * debian/po/es.po: update spanish translation. Thanks
+    Javier Fernández-Sanguino. Closes: #773567
+  * debian/control: make installation dependencies more flexible by adding
+    php5-fpm as alternative to libapache2-mod-php5 | php5-cgi. Thanks Detlev
+    Brodowski. Closes: #807072
+  * debian/rules: replace obsolete "dh binary-indep --before dh_lintian" and
+    "dh binary-indep --remaining" by "override_dh_lintian" and "dh_lintian".
+    Thanks lintian.
+  * debian/changelog: add CVE ID's to entry moodle (2.7.11+dfsg-1).
+  * debian/changelog: in entry moodle (2.7.2+dfsg-3), refer to #754565 and
+    give credit.
+  * debian/changelog: in entry moodle (2.7.2-2), refer to #736800 and give
+    credit.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 07 Dec 2015 13:52:32 +0100
+
+moodle (2.7.11+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released Nov 9, 2015. Security issues fixed:
+    - (MSA-15-0039) CVE-2015-5335 CSRF in site registration form: Attacker can
+      send admin a link to site registration form that will display correct URL
+      but, if submitted, will register with another hub. It is possible to trick
+      a site/admin into sending aggregate stats to an arbitrary domain.
+      Reported by Andrew Davis; Upstream patch:
+      http://git.moodle.org/gw?p=moodle.git&a=search&h=HEAD&st=commit&s=MDL-51091
+    - (MSA-15-0040) CVE-2015-5336 Student XSS in survey: Standard survey module
+      is vulnerable to XSS attack by students who fill the survey.  Reported by
+      Hugh Davenport; Upstream patch: MDL-49940
+    - (MSA-15-0041) CVE-2015-5337 XSS in flash video player: XSS vulnerability
+      caused by Flowplayer flash video player has been addressed.  Reported by
+      Andrew Nicols; MDL-48085
+    - (MSA-15-0042) CVE-2015-5338 CSRF in lesson login form: Password-protected
+      lesson modules are subject to CSRF vulnerability.  Reported by Ankit
+      Agarwal; MDL-48109.
+    - (MSA-15-0043) CVE-2015-5339 Web service core_enrol_get_enrolled_users does
+      not respect course group mode: Through WS core_enrol_get_enrolled_users it
+      is possible to retrieve list of course participants who would not be
+      visible when using web site.  Reported by Daniel Palou; MDL-51861
+    - (MSA-15-0044) CVE-2015-5340 Capability to view available badges is not
+      respected: Logged in users who do not have capability 'View available
+      badges without earning them' can still access the full list of badges.
+      Capability moodle/badges:viewbadges is not respected.  Reported by Marina
+      Glancy; MDL-51684
+    - (MSA-15-0045) CVE-2015-5341 SCORM module allows to bypass access
+      restrictions based on date: Incorrect and missing handling of availability
+      dates in mod_scorm let users to view the SCORM contents bypassing the date
+      restriction.  Reported by Juan Leyva; MDL-50837
+    - (MSA-15-0046) CVE-2015-5342 Choice module closing date can be bypassed:
+      Users can mock URL to delete or submit new responses after the choice
+      module was closed.  Reported by Juan Leyva; MDL-51569
+    See https://bugzilla.redhat.com/show_bug.cgi?id=1288158 for details.  Thanks
+    Adam Mariš @ Red Hat.  See also
+    https://moodle.org/mod/forum/discuss.php?d=322852 , published Nov 9, 2015.
+    Other Fixes and improvements:
+    - MDL-51083 - Fixed undesired browser password autofilling in several forms
+      (majority of forms were fixed in MDL-45772 in previous release)
+    - MDL-51190 - Fixed MS Edge locking up when viewing embedded PDF
+    See https://docs.moodle.org/dev/Moodle_2.7.11_release_notes for more
+    details.
+  * debian/source/lintian-overrides: add some more incorrectly flagged
+    javascript files.  See lintian bug 802028 (and 799861).
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Fri, 04 Dec 2015 15:12:23 +0100
+
+moodle (2.7.10+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released Sept 21, 2015.  Security issues
+    fixed:
+    - MSA-15-0030: Students can re-attempt answering questions in the lesson,
+      Reported by Eric Eakin, MDL-50516, CVE-2015-5264
+    - MSA-15-0031: Teacher in forum can still post to "all participants" and
+      groups they are not members of, Reported by David Scotson, MDL-50576,
+      CVE-2015-5272
+    - MSA-15-0032: Users can delete files uploaded by other users in wiki,
+      Reported by John Provasnik, MDL-48371, CVE-2015-5265
+    - MSA-15-0033: Meta course synchronisation enrols suspended students as
+      managers for a short period of time, Reported by Brian Winstead,
+      MDL-50744, CVE-2015-5266
+    - MSA-15-0034: Vulnerability in password recovery mechanism, Reported by
+      Vincent Herbulot (@us3r777), MDL-50860, CVE-2015-5267
+    - MSA-15-0035: Rating component does not check separate groups, Reported by
+      Juan Leyva, MDL-50173, CVE-2015-5268
+    - MSA-15-0036: XSS in grouping description, Reported by Marina Glancy,
+      MDL-50709, CVE-2015-5269
+    See the 21 Sep 2015 post from Marina Glancy at
+    http://www.openwall.com/lists/oss-security/2015/09/21/1 for more details on
+    these fixed security issues.  Some other fixes and improvements: MDL-51050
+    - Forms such as "Create new group" are no longer populated with passwords
+    and usernames by the browsers; MDL-42670 - Recent activity block no longer
+    shows student name when assignment blind marking is on. See
+    https://docs.moodle.org/dev/Moodle_2.7.10_release_notes for more details.
+    Thanks Salvatore Bonaccorso and Thijs Kinkhorst for forwarding the news.
+    Closes: #799634
+  * debian/source/lintian-overrides: add comment/comment.js, some
+    lib/yuilib/3.15.0/**/*-debug.js and
+    lib/yuilib/2in3/2.9.0/build/yui2-*/*-debug.js files to list of false
+    positives "source-is-missing". Bug #799861 reported against lintian.
+  * debian/copyright: clarify license situation of
+    lib/pear/HTML/QuickForm/DHTMLRulesTableless.php and
+    lib/pear/HTML/QuickForm/Renderer/Tableless.php. Thanks
+    Ondřej Surý and Paul Tagliamonte. Closes: #752615
+  * debian/control: no longer depend upon libphp-pclzip.  This dependency was
+    actually no longer needed since 2.7.5+dfsg-3, when phpexcel got removed.
+    Thanks David Prévot. Closes: #749609
+  * debian/changelog: fix entry for 2.7.5+dfsg-3 to properly close 746594.
+    See also https://tracker.moodle.org/browse/MDL-45395 .  Thanks Dan Poltawski
+    e.a.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 21 Sep 2015 09:52:15 +0200
+
+moodle (2.7.9+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released July 6, 2015.  Security issues fixed:
+    - MSA-15-0026 Possible phishing when redirecting to external site using
+      referer header, Reported by Totara, MDL-50688, CVE-2015-3272
+    - MSA-15-0028 Possible XSS through custom text profile fields in Web
+      Services, Reported by Marina Glancy, MDL-50130, CVE-2015-3274
+    - MSA-15-0029 Javascript injection in SCORM module, Reported by Martin
+      Greenaway, MDL-50614, CVE-2015-3275
+    See http://www.openwall.com/lists/oss-security/2015/07/13/2 for more details
+    on these fixed security issues.  Some other fixes and improvements:
+    MDL-50380 - Fixed missing parameter error when editing files in wiki;
+    MDL-50177 - Upgrading assignments in 2.7/2.8 works even when conditional
+    access is used; MDL-50275 - Added missing version bump after risk bitmap
+    change in MDL-49941.  See the Moodle 2.7.9 release notes at
+    https://docs.moodle.org/dev/Moodle_2.7.9_release_notes for more details.
+    Thanks Salvatore Bonaccorso. Closes: #792242
+  * debian/changelog: fix line length: max 80 columns.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Thu, 16 Jul 2015 15:44:09 +0200
+
+moodle (2.7.8+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released 11 May 2015.  Security issues
+    fixed:
+    - MSA-15-0018: Quiz manual-grading is an XSS risk, but does not declare
+      that, Reported by Hugh Davenport, MDL-49941, CVE-2015-3174
+    - MSA-15-0019: Possible phishing when redirecting to external site using
+      referer header, Reported by Dingjie Yang, MDL-49179, CVE-2015-3175
+    - MSA-15-0020: User fullname disclosure through account confirmation link,
+      Reported by: Federico Kirschbaum, MDL-50099, CVE-2015-3176
+    - MSA-15-0022: Potential XSS risk when returning text entered by student
+      from Web Services, Reported by Eloy Lafuente, MDL-49718, CVE-2015-3178
+    - MSA-15-0023: Suspended user is able to login when confirming email,
+      Reported by Marina Glancy, MDL-50090, CVE-2015-3179
+    - MSA-15-0024: User with suspended enrolment can see sections in the
+      navigation tree, Reported by Alex Mitin, MDL-49788, CVE-2015-3180
+    - MSA-15-0025: Capability to manage own files is not respected in Web
+      Services, Reported by Juan Leyva, MDL-49994, CVE-2015-3181
+    See http://www.openwall.com/lists/oss-security/2015/05/18/1 for more details
+    on these fixed security issues.  Some other fixes: MDL-48187 - Fixed problem
+    with new items automatically marked as extra credit in SWM category in
+    Gradebook; MDL-42449 - Grade category is preserved when duplicating a
+    module; MDL-46746, MDL-47003, MDL-47002 - Atto editor HTML cleaning is less
+    aggressive and more aware of special tags, especially noticeable when
+    pasting text from Word.  See the Moodle 2.7.8 release notes at
+    https://docs.moodle.org/dev/Moodle_2.7.8_release_notes for more details.
+    Thanks Salvatore Bonaccorso.  Closes: #785591
+  * debian/watch: fix syntax.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Fri, 22 May 2015 10:34:59 +0200
+
+moodle (2.7.7+dfsg-2) unstable; urgency=high
+
+  * debian/install: now installs scripts mdeploy.php and mdeploytest.php.
+  * debian/install: now installs the directory "availability", thanks Maarten
+    Horden and Oscar Diaz (Closes: #778422).
+  * debian/changelog: Add some extra information on issues fixed in entry
+    moodle (2.7.7+dfsg-1)), thanks Marina Glancy and Thijs Kinkhorst.
+  * debian/changelog: Add some extra information on CVE-2013-3630 in entry
+    moodle (2.7.5+dfsg-3), thanks Marina Glancy.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Tue, 17 Mar 2015 14:20:39 +0100
+
+moodle (2.7.7+dfsg-1) unstable; urgency=high
+
+  * New upstream security release, released 10 March 2015.  (Moodle 2.7.6 was
+    released 9 March 2015).  Issues fixed:
+    - MSA-15-0010: Personal contacts and number of unread messages can be
+      revealed, Reported by Barry Oosthuizen, MDL-49204, CVE-2015-2266
+    - MSA-15-0011: Authentication in mdeploy can be bypassed. Reported by
+      Frédéric Massart, MDL-49087 CVE-2015-2267
+    - MSA-15-0012: ReDoS Possible with Convert links to URLs filter. Reported by
+      Rob, MDL-38466, CVE-2015-2268
+    - MSA-15-0013: Block title not properly escaped and may cause HTML
+      injection.  Reported by Gjoko Krstic, MDL-49144, CVE-2015-2269
+    - MSA-15-0014: Potential information disclosure for the inaccessible
+      courses.  Reported by Sam Hemelryk, MDL-48804, CVE-2015-2270
+    - MSA-15-0015: User without proper permission is able to mark the tag as
+      inappropriate, Reported by Frédéric Massart, MDL-49084, CVE-2015-2271
+    - MSA-15-0016: Web services token can be created for user with temporary
+      password.  Reported by Juan Leyva, MDL-48691, CVE-2015-2272
+    - MSA-15-0017: XSS in quiz statistics report. Reported by Tim Hunt,
+      MDL-49364, CVE-2015-2273
+  * debian/changelog: enhance 2.7.2-1 entry: add note on upstream long term
+    support of this 2.7 branch.
+  * debian/TODO: add some build instructions.
+  * debian/control: more strict php-cas dependency: known to break with
+    1.3.1-4+deb7u1, known to work with 1.3.3-1.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Tue, 10 Mar 2015 14:12:49 +0100
+
+moodle (2.7.5+dfsg-3) unstable; urgency=high
+
+  * debian/README.Debian: add authors and dates, in order to make status more
+    clear.
+  * debian/watch: (trying to) get it working again, with revamped moodle.org
+    website.
+  * debian/changelog: add even more CVE-numbers to entry 2.7.5+dfsg-1.
+  * For the record, https://security-tracker.debian.org/tracker/CVE-2013-3630
+    will not get fixed: it's not a bug: the attack can only get launched by an
+    administrator, and administrators need to be trusted.  Sites that provide
+    shared hosting and want to prevent the Moodle admin user from being able to
+    set executable paths can also use: "$CFG->preventexecpath = true;".  See
+    also Debian bug #775842 and Moodle issue MDL-41449.
+  * Fix CVE-2014-4172 and CVE-2014-2054:
+    - debian/rules, debian/control: don't use CAS client library as shipped with
+      moodle (unchanged phpCAS 1.3.3, see upstream 
+      auth/cas/CAS/moodle_readme.txt) but php-cas as shipped with Debian
+      (1.3.3-1 and 1.3.1-4+deb7u1); create symlinks /u/s/m/auth/cas/CAS/CAS.php
+      -> /usr/share/php/CAS.php and /u/s/m/auth/cas/CAS/CAS ->
+      /usr/share/php/CAS/.  This fixes CVE-2014-4172.
+    - debian/rules: remove /u/s/m/lib/phpexcel from binary package.  Remove
+      lib/phpexcel/PHPExcel/Shared/OLE* from upstream sources.  This fixes both
+      a license problem and a security problem: Although the PHP license is
+      generally agreed to be DFSG-free, using it as a license on anything that
+      isn't PHP itself makes the result non-free.  PHP OLE is licensed under the
+      PHP license.  Older versions of PHP Excel, such as the one shipped with
+      moodle, suffer from security problem CVE-2014-2054.  See also Debian Bug
+      #718585 "RFP: php-excel".  (Closes: #746594)
+    This closed Debian bug "Multiple security issues"; thanks Moritz
+    Muehlenhoff, Thijs Kinkhorst and Hubert Chathi (Closes: #775842)
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 09 Mar 2015 12:56:41 +0100
+
+moodle (2.7.5+dfsg-2) unstable; urgency=high
+
+  * debian/README.Debian: add notes on upgrading.
+  * debian/TODO: added.
+  * debian/changelog: add CVE-number to previous entry.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Tue, 10 Feb 2015 14:27:09 +0000
+
+moodle (2.7.5+dfsg-1) unstable; urgency=high
+
+  * New upstream security release:
+     Moodle 2.7.5 release notes, Release date: 2 February, 2015: "A number of
+     security related issues were resolved." "Here is the
+     full list of fixed issues in 2.7.5:
+     https://tracker.moodle.org/issues/?jql=project+%3D+mdl+AND+resolution+%3D+fixed+AND+fixVersion+in+%28%222.7.5%22%29+ORDER+BY+priority+DESC"
+     Fixes include: "Preauthenticated Local File Disclosure", as reported
+     by Emiel Florijn, MDL-48980 and MDL-48990, i.e. CVE-2015-1493 (also
+     aliased as CVE-2015-0246).  See also
+     https://docs.moodle.org/dev/Moodle_2.7.5_release_notes and
+     https://moodle.org/mod/forum/discuss.php?d=279956 , published feb 10
+     2015.
+
+  * For the record: Security issues fixed in upstream Moodle 2.7.3 and 2.7.4:
+     CVE-2015-0218 (see
+     https://security-tracker.debian.org/tracker/CVE-2015-0218),
+     CVE-2015-0217, CVE-2015-0216, CVE-2015-0215, CVE-2015-0214, CVE-2015-0213,
+     CVE-2015-0212, CVE-2015-0211, CVE-2014-9059, CVE-2014-7848, CVE-2014-7847,
+     CVE-2014-7846, CVE-2014-7845, CVE-2014-7838, CVE-2014-7837, CVE-2014-7836,
+     CVE-2014-7835, CVE-2014-7834, CVE-2014-7833, CVE-2014-7832, CVE-2014-7831,
+     CVE-2014-7830, CVE-2014-3617, CVE-2014-3553, CVE-2014-3551, CVE-2014-3548,
+     CVE-2014-3547, CVE-2014-3546, CVE-2014-3545, CVE-2014-3544, CVE-2014-3543,
+     CVE-2014-3542, CVE-2014-3541.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 02 Feb 2015 08:38:14 +0000
+
+moodle (2.7.2+dfsg-3) experimental; urgency=medium
+
+  * Remove lib/tcpdf/include/sRGB.icc from upstream source since it does
+    not allow modification (usually known as
+    sRGB_IEC61966-2-1_black_scaled.icc).  FWIW: this file was not installed
+    by the Moodle 2.6.3 Debian package.  Thanks bastien ROUCARIES, Riley Baird
+    and Tomasz Muras. Closes: #754565
+  * Remove lib/flowplayer/flowplayer.audio-3.2.11.swf since sources missing.
+  * debian/rules: add preliminary target dfsg, with some comments.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Fri, 30 Jan 2015 12:48:55 +0000
+
+moodle (2.7.2-2) experimental; urgency=medium
+
+  * debian/control: remove Thijs Kinkhorst from Uploaders, on his request.
+    Thanks Thijs!
+  * debian/source/include-binaries, debian/missing-sources: Added missing
+    sources for
+    - the Flowplayer video player from Flowplayer Ltd
+      (http://flash.flowplayer.org/): flash-release_3_2_18.tar.gz for
+      flowplayer-3.2.18.swf, flash-release_3_2_16.tar.gz for
+      lib/flowplayer/flowplayer.controls-3.2.16.swf.
+      Downloaded from https://github.com/flowplayer/flash/releases.
+      See also #736800 "Sourceless flash file" and
+      https://tracker.moodle.org/browse/MDL-44093.  Thanks bastien ROUCARIES,
+      Robert Bihlmeyer and Thijs Kinkhorst.   Closes: #736800
+    - filter/tex/mimetex.linux and mimetex.freebsd
+    NB: flowplayer-3.2.18.swf, flowplayer.controls-3.2.16.swf, mimetex.linux
+    and mimetex.freebsd are not shipped with the binary Debian package.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Mon, 03 Nov 2014 15:03:51 +0100
+
+moodle (2.7.2-1) unstable; urgency=medium
+
+  * This is a semi-public release.
+  * New upstream release; new upstream 2.7 branch.  About this branch, upstream
+    states, at https://docs.moodle.org/dev/Releases#Moodle_2.7 : "Bug fixes for
+    general core bugs in 2.7.x will end 11 May 2015 (12 months).  Bug fixes for
+    serious security issues in 2.7.x will end 8 May 2017 (36 months)."
+  * This upstream release fixes security issues:
+    - MSA-14-0014 Cross-site request forgery possible in Assignment
+      [CVE-2014-0213]
+    - MSA-14-0015 Web service token expiry issue for MoodleMobile
+      [CVE-2014-0214]
+    - MSA-14-0016 Anonymous student identity revealed in Assignment
+      [CVE-2014-0215]
+    - MSA-14-0017 File access issue in HTML block [CVE-2014-0216]
+    - MSA-14-0018 Information leak in courses [CVE-2014-0217]
+    - MSA-14-0019 Reflected XSS in URL downloader repository [CVE-2014-0218]
+    (See https://docs.moodle.org/dev/Moodle_2.7_release_notes#Security_issues)
+  * debian/rules: remove extra license file
+    lib/editor/atto/yui/src/rangy/js/license.txt.
+  * debian/copyright: add MIT license, for Rangy library for the Atto editor.
+  * debian/moodle.lintian-overrides: add embedded-php-library
+    lib/markdown/Markdown.php: we can't use Debian's libmarkdown-php due to
+    incompatibilities.
+  * debian/moodle.lintian-overrides: add embedded-php-library
+    lib/simplepie/library/SimplePie.php: we can't use Debian's libphp-simplepie
+    due to incompatibilities.
+  * debian/moodle.lintian-overrides: add embedded-php-library
+    lib/yuilib/3.15.0/yui/yui-min.js: we can't use Debian's libjs-yui
+    due to incompatibilities.
+  * debian/moodle.lintian-overrides, debian/source/lintian-overrides: change
+    lines like "moodle: embedded-javascript-library
+    lib/editor/tinymce/tiny_mce/3.5.8/tiny_mce.js" in "moodle source:
+    source-is-missing
+    lib/editor/tinymce/tiny_mce/3.5.10/plugins/advimage/langs/en_dlg.js":
+    Moodle _does_ ship (modified) sources.
+  * debian/rules, debian/control: don't use TCPDF library as shipped with
+    moodle (tcpdf_php5 TCPDF 5.9.133 MDL-29283, see
+    lib/tcpdf/readme_moodle.txt), but php-tcpdf as shipped with
+    Debian (6.0.048+dfsg-2~bpo70+1 in wheezy-backports, 6.0.093+dfsg-1 in
+    jessie): create symlink /usr/share/moodle/lib/tcpdf -> /usr/share/php/tcpdf.
+    NB: the file lib/tcpdf/include/sRGB.icc does not allow modification.
+  * debian/source/lintian-overrides: Moodle _does_ ship source of files
+    lib/yuilib/3.15.0/datatype-date-format/lang/datatype-date-format* and other
+    3.15.0 and 2in3/2.9.0/build files.
+  * debian/source/lintian-overrides: Moodle _does_ ship source of file
+    AMFTester.swf in amf/testclient/AMFTester.mxml.
+  * debian/rules: do not install the Flowplayer video player from Flowplayer
+    Ltd (http://flash.flowplayer.org/): source is missing.
+  * debian/docs: remove tags.txt: only relevant for developers.
+  * debian/control: add myself to uploaders.
+  * debian/control: checked for policy 3.9.6, no changes necessary.
+
+ -- Joost van Baal-Ilić <joostvb@debian.org>  Tue, 28 Oct 2014 09:44:46 +0100
+
+moodle (2.6.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Mon, 12 May 2014 16:10:38 +0200
+
+moodle (2.6.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Wed, 12 Mar 2014 18:17:07 +0100
+
+moodle (2.6.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Do install tcpdf lib, which is now required by core Moodle.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Wed, 12 Feb 2014 15:49:12 +0100
+
+moodle (2.5.4-1) unstable; urgency=medium
+
+  * New upstream release, fixing security issues:
+    - MSA-14-0001 Config passwords visibility issue [CVE-2014-0008]
+    - MSA-14-0002 Group constraints lacking in "login as" [CVE-2014-0009]
+    - MSA-14-0003 CSRF vulnerability in profile fields [CVE-2014-0010]
+  * Move /var/lib/moodle directory into package.
+  * Revert back to bundled yui3. Unfortunately, version in Debian and
+    of upstream are not compatible (closes: #735312).
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Tue, 21 Jan 2014 13:40:52 +0100
+
+moodle (2.5.3-3) unstable; urgency=medium
+
+  * Drop unused libjs-yui dependency (closes: #730104).
+  * Replace bundled yui3 with dependency on packaged libjs-yui3-min.
+  * Add virtual-mysql-{server,client} dependency alternatives
+    (closes: #732895).
+  * Change owner of config.php from www-data to root.
+  * Checked for policy 3.9.5, no changes necessary.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Fri, 03 Jan 2014 11:44:05 +0100
+
+moodle (2.5.3-2) unstable; urgency=medium
+
+  * Fix syntax error in generated config.php.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Fri, 29 Nov 2013 09:17:29 +0100
+
+moodle (2.5.3-1) unstable; urgency=low
+
+  * New upstream version: 2.5.3.
+    - Incorporates CAS security patch.
+    - Fixes security issues CVE-2013-4522, CVE-2013-4523,
+      CVE-2013-4524, CVE-2013-4525, CVE-2013-6780.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Fri, 22 Nov 2013 14:09:51 +0100
+
+moodle (2.5.2-1) unstable; urgency=medium
+
+  * New upstream version: 2.5.2.
+    - Incorporates S3 security patch.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Mon, 09 Sep 2013 15:22:35 +0200
+
+moodle (2.5.1-2) unstable; urgency=low
+
+  * Update debconf translation for
+    Swedish, thanks Martin Bagge (closes: #717323);
+    Italian, thanks Beatrice Torracca (closes: #717162);
+    French, thanks Julien Patriarca (closes: #717548);
+    Czech, thanks Michal Simunek (closes: #717550).
+  * Add Breaks/Replaces moodle-book; integrated since Moodle 2.3.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Sun, 04 Aug 2013 17:30:38 +0200
+
+moodle (2.5.1-1) unstable; urgency=low
+
+  * New upstream version: 2.5.1.
+    - Fixes security issues:
+      CVE-2013-2242 CVE-2013-2243 CVE-2013-2244 CVE-2013-2245
+      CVE-2013-2246
+  * Depend on apache2 instead of obsolete apache2-mpm-prefork.
+  * Use packaged libphp-phpmailer (closes: #429339), adodb,
+    HTMLPurifier, PclZip.
+  * Update debconf translations, thanks Salvatore Merone, Pietro Tollot,
+    Joe Hansen, Yuri Kozlov, Holger Wansing, Américo Monteiro,
+    Adriano Rafael Gomes, victory, Michał Kułach.
+    (closes: #716972, #716986, #717080, #717108, #717278)
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Fri, 19 Jul 2013 08:52:46 +0200
+
+moodle (2.5-1) unstable; urgency=low
+
+  * New upstream version: 2.5.
+    - Removed problematically licenced JSON code (closes: #692626).
+    - Fixes security issues:
+      CVE-2012-3363, CVE-2012-6098, CVE-2012-6099, CVE-2012-6100,
+      CVE-2012-6101, CVE-2012-6103, CVE-2012-6104, CVE-2012-6105,
+      CVE-2012-6112, CVE-2013-1829, CVE-2013-1830, CVE-2013-1831,
+      CVE-2013-1832, CVE-2013-1833, CVE-2013-1834, CVE-2013-1835,
+      CVE-2013-1836, CVE-2013-2080, CVE-2013-2081, CVE-2013-2082,
+      CVE-2013-2083 (closes: #702387, #703870).
+  * FLV player removed, no need to repack source tarball.
+  * Checked for policy 3.9.4, no changes. Updated to debhelper 8.
+  * Use xz compression for binary packages.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Fri, 28 Jun 2013 15:35:53 +0200
+
+moodle (2.2.7.dfsg-1) unstable; urgency=low
+
+  * New upstream version: 2.2.7+ (Build: 20130125)
+
+  * Fix possible security issue for curl in 3rd party libraries:
+    * phpCAS (CVE-2012-5583)
+    * amazon-s3-php-class (CVE-2012-6087)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Mon, 28 Jan 2013 17:43:26 +0100
+
+moodle (2.2.6.dfsg-1) unstable; urgency=low
+
+  * New upstream version: 2.2.6 (Build: 20121112)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Thu, 15 Nov 2012 21:50:13 +0100
+
+moodle (2.2.3.dfsg-2.6) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Backport multiple security issues from upstream's MOODLE_22_STABLE
+    branch.
+    - MSA-12-0057: MDL-29872 - Access issue through repository
+      Fixes CVE-2012-5471
+    - MSA-12-0058: MDL-32785 - Possible form data manipulation issue
+      Fixes CVE-2012-5472
+    - MSA-12-0059: MDL-34448 - Information leak in Database activity module
+      Fixes CVE-2012-5473
+    - MSA-12-0061: MDL-33791 - Remote code execution through Portfolio API
+      Fixes CVE-2012-5479
+    - MSA-12-0062: MDL-35558 - Information leak in Database activity module
+      Fixes CVE-2012-5480
+
+ -- Didier Raboud <odyx@debian.org>  Mon, 12 Nov 2012 10:00:00 +0100
+
+moodle (2.2.3.dfsg-2.5) unstable; urgency=low
+
+  * Non-maintainer brown-paper bag upload.
+
+  * Fix the preinst shell syntax to properly drop the left-over symlink
+    in favour of the shipped directory. (Closes: #689506 fo real now)
+
+ -- Didier Raboud <odyx@debian.org>  Wed, 31 Oct 2012 08:25:55 +0100
+
+moodle (2.2.3.dfsg-2.4) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Drop a left-over symlink in favour of the shipped directory.
+   (Closes: #689506)
+
+ -- Didier Raboud <odyx@debian.org>  Sun, 28 Oct 2012 15:01:09 +0100
+
+moodle (2.2.3.dfsg-2.3) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Backport multiple security issues from upstream's MOODLE_22_STABLE
+    branch. (Closes: #687924)
+    - MSA-12-0051: MDL-30792 - File upload size constraint issue
+      Fixes CVE-2012-4400
+    - MSA-12-0052: MDL-28207 - Course topics permission issue
+      Fixes CVE-2012-4401
+    - MSA-12-0053: MDL-34585 - Blog file access issue
+      Fixes CVE-2012-4407
+    - MSA-12-0054: MDL-34519 - Course reset permission issue
+      Fixes CVE-2012-4408
+    - MSA-12-0055: MDL-34368 - Web service access token issue
+      Fixes CVE-2012-4402
+
+ -- Didier Raboud <odyx@debian.org>  Fri, 28 Sep 2012 12:52:21 +0200
+
+moodle (2.2.3.dfsg-2.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Backport multiple security issues from upstream's MOODLE_22_STABLE
+    branch. (Closes: #682203)
+    - MDL-31692 mod_lti - ensure that various mforms are used properly
+      Fixes CVE-2012-3389
+    - MDL-33916 Ensure that capabilities are checked for cached user
+      enrolments
+      Fixes CVE-2012-3388
+
+ -- Didier Raboud <odyx@debian.org>  Mon, 23 Jul 2012 19:13:56 +0200
+
+moodle (2.2.3.dfsg-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+
+  * Backport multiple security issues from upstream's MOODLE_22_STABLE
+    branch (Closes: #682203)
+    - MDL-33808 - format title on the repository instance screen
+    - MDL-33808 - incorrect cleaning of repository names
+      Both patches fix CVE-2012-3393.
+    - MDL-23254 Authentication : used httpswwwroot as root url during
+      authentication procedure where $PAGE->https_required() is
+      specified.
+      Fix CVE-2012-3394
+    - MDL-27675 - Feedback module abuses data_submitted
+      Fix CVE-2012-3395
+    - MDL-34045 fix invalid idnumber field type in cohort form
+      Fix CVE-2012-3396
+    - MDL-33466: Group restriction should hide activity even with 'show
+      availability' option
+      Fix CVE-2012-3397
+
+ -- Didier Raboud <odyx@debian.org>  Fri, 20 Jul 2012 19:52:07 +0200
+
+moodle (2.2.3.dfsg-2) unstable; urgency=low
+
+  *  Don't depend on ucf during purge (closes: #678027)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Thu, 21 Jun 2012 17:31:35 +0200
+
+moodle (2.2.3.dfsg-1) unstable; urgency=high
+
+  *  New upstream version: 2.2.3+ (Build: 20120615)
+     closes: #674163
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Sat, 16 Jun 2012 21:39:12 +0200
+
+moodle (2.2.2.dfsg-2) unstable; urgency=low
+
+  * Fix path to cron (closes: #669229)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Wed, 18 Apr 2012 19:34:35 +0200
+
+moodle (2.2.2.dfsg-1) unstable; urgency=low
+
+  * New upstream version: 2.2.2+ (Build: 20120412)
+    closes: #658865,#664260,#647489,#443949,#441013,#505044,#375290
+  * Updated Standards-Versions to 3.9.3
+  * Removing Dan from maintainers (thanks for all your work Dan!)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Sun, 15 Apr 2012 13:50:52 -0400
+
+moodle (1.9.9.dfsg2-6) unstable; urgency=high
+
+  * Backporting security fixes from Moodle 1.9.17
+     - MSA-12-00013 DB activtity export does not respect groups
+         (CVE-2012-1155, closes: #668411)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Thu, 12 Apr 2012 21:55:48 +0100
+
+moodle (1.9.9.dfsg2-5.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix pending l10n issues. Debconf translations:
+    - Danish (Joe Hansen).  Closes: #658747
+    - Dutch; (Jeroen Schot).  Closes: #660243
+    - Brazilian Portuguese (Adriano Rafael Gomes).  Closes: #668092
+    - Italian (Beatrice Torracca).  Closes: #668161
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 10 Apr 2012 07:36:58 +0200
+
+moodle (1.9.9.dfsg2-5) unstable; urgency=high
+
+  * Backporting security fixes from Moodle 1.9.15 and 1.9.16
+    (closes: #652235)
+     - MSA-11-0054 Personal information leak
+     - MSA-11-0045 Potential to masquerade through MNet (CVE-2011-4584)
+     - MSA-11-0046 Insecure authentication transmission (CVE-2011-4585)
+     - MSA-11-0047 Possible injection attack in Calendar (CVE-2011-4586)
+     - MSA-11-0048 Password loss issue (CVE-2011-4587)
+     - MSA-11-0049 Network restriction ineffective with MNet (CVE-2011-4588)
+     - MSA-12-0007 Email injection prevention (CVE-2012-0796)
+     - MSA-12-0006 Additional email address validation (CVE-2012-0795)
+     - MSA-12-0005 Encryption enhancement (CVE-2012-0794)
+     - MSA-12-0004 Added profile image security (CVE-2012-0793)
+     - MSA-12-0003 Added password protection 
+     - MSA-12-0002 Personal information leak, previously MSA-11-0040 
+       (CVE-2011-4308 and CVE-2012-0792)
+     - MSA-12-0001 Recaptcha transmission consistency issue
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Mon, 27 Feb 2012 21:14:48 +0000
+
+moodle (1.9.9.dfsg2-4) unstable; urgency=high
+
+  * Backporting security fixes from Moodle 1.9.13 and 1.9.14
+      - MSA-11-0026 Fields in user upload CSV not being escaped (MDL-28360)
+      - MSA-11-0025 Group names in user upload CSV not being escaped (MDL-28197)
+      - MSA-11-0024 Recaptcha images were being authenticated 
+          from an older server (MDL-27889) (closes: #638935)
+      - MSA-11-0020 Continue links in error messages can lead offsite (MDL-27464)
+      - MSA-11-0038 Database injection protection strengthened (MDL-29033)
+      - MSA-11-0037 Course section editing injection vulnerability (MDL-28722)
+      - MSA-11-0036 Messaging refresh vulnerability (MDL-29311)
+      - MSA-11-0032 MNET SSL validation issue (MDL-29148)
+      - MSA-11-0031 Forms API constant issue (MDL-23872)
+  * Make sure that smarty & yui symlinks are correct (closes: 603255,614712) 
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Fri, 28 Oct 2011 13:29:14 +0100
+
+moodle (1.9.9.dfsg2-3) unstable; urgency=high
+
+  * Backporting security fixes from Moodle 1.9.11 and 1.9.12
+      - MSA-11-0002 Cross-site request forgery vulnerability in RSS block (MDL-18839)
+      - MSA-11-0003 Cross-site scripting vulnerability in tag autocomplete (MDL-25754)
+      - MSA-11-0008 IMS enterprise enrolment file may disclose sensitive information (MDL-26189)
+      - MSA-11-0011 Multiple cross-site scripting problems in media filter (MDL-26030)
+      - MSA-11-0015 Cross Site Scripting through URL encoding (MDL-26966)
+      - MSA-11-0013 Group/Quiz permissions issue (MDL-25122)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Wed, 18 May 2011 20:57:59 +0100
+
+moodle (1.9.9.dfsg2-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix encoding of Swedish debconf translation.
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 11 Jan 2011 22:03:44 +0100
+
+moodle (1.9.9.dfsg2-2) unstable; urgency=low
+
+  * Added Romanian translation
+  * Updated Japanese translation (closes: #596820)
+  * Backporting security fixes from Moodle 1.9.10 (closes: #601384)
+     - Updated embedded CAS to 1.1.3
+     - Added patch for MDL-24523:
+       clean_text() not filtering text in markdown format
+     - Added patch for MDL-24810 and upgraded customized HTML Purifier to 4.2.0 
+     - Added patch for MDL-24258:
+       students can delete their forum posts later than $CFG->maxeditingtime 
+       under certain conditions
+     - Added patch for MDL-23377:
+       Can't delete quiz attempts in course without enrolled students
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Sat, 30 Oct 2010 12:19:28 +0100
+
+moodle (1.9.9.dfsg2-1) unstable; urgency=low
+
+  * Enable HTML purifier by default
+  * Added Janapenese translation (closes: #593808)
+  * Removed from source swf files without a source code
+    and added README.source
+  * Updated bundled HTML purifier library - fix for
+    CVE-2010-2479 (closes: #593301) 
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Tue, 24 Aug 2010 20:35:29 +0100
+
+moodle (1.9.9.dfsg-1) unstable; urgency=low
+
+  [ Jonathan Wiltshire ]
+  * Debconf templates and debian/control reviewed by the debian-l10n-
+    english team as part of the Smith review project. Closes: #588871
+  * Debconf translation updates:
+     - Russian (closes: #589247)
+     - Czech (closes: #589265)
+     - Swedish (closes: #589270)
+     - French (closes: #589510)
+     - German (closes: #590120)
+     - Spanish (closes: #590449)
+     - Portugese (closes: #590556)
+
+  [ Tomasz Muras ]
+  * New debconf translation - Polish 
+  * Removed .swf files as non-free (closes: #591201)
+  * Fixed generation of config.php for postgres (thanks Giles Westwood)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Sun, 15 Aug 2010 21:19:10 +0100
+
+moodle (1.9.9-2) unstable; urgency=low
+
+  * Fixed JS includes for YUI library (closes: #589612)
+  * Bumped standards version to 3.9.0
+  * Moved BSD licenses into copyright (fixes lintian warning)
+  * Setting DM-Upload-Allowed as agreed with Xavier Oswald <xoswald@debian.org>
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Thu, 22 Jul 2010 23:23:22 +0100
+
+moodle (1.9.9-1) unstable; urgency=low
+
+  * Rewritten debian/rules 
+  * Removed unnecessary usr/share/moodle/update-notifier 
+  * New Upstream Version: 1.9.9
+  * New upstream fixes CVE-2010-1619 (closes: #585425)
+  * New upstream fixes MSA-10-0011 (closes: #586280)
+
+ -- Tomasz Muras <nexor1984@gmail.com>  Wed, 23 Jun 2010 21:00:39 +0100
+
+moodle (1.9.8-1) unstable; urgency=low
+
+  [Tomasz Muras]
+  * New Maintainer (closes: #581229, #574969).
+  * New Upstream Version (closes: #475535).
+  * Added information about flvplayer to copyright (closes: #526543).
+  * phpCAS XSS vulnerability fixed in mainstream Moodle 1.9.8 (closes: #574757).
+  * Several security issues fixed in upstream (closes: #576189).
+  * Moodle depends on postgresql or MySQL (closes: #551399).
+  * Re-written to use dbconfig-common (closes: #302205).
+  * Updated copyright with two new entires (closes: #526543).
+  * Drop use of wwwconfig (closes: #389502).
+  * Package is now not creating Apache config automatically (closes: #555672).
+    It's up to the user to configure the webserver but package provides the
+    templates.
+  * Added "allow from localhost" (closes: #551402).
+  * Asking for wwwroot during the installation (closes: #302207).
+  * Removing nusoap as it's not necessary for PHP 5 (closes: #529573).
+
+  [Xavier Oswald]
+  * Add myself as uploader.
+  * Bump Stadards-Version to 3.8.4.
+  * debian/copyright: update with DEP-5 format proposal.
+  * Switch to dpkg-source 3.0 (quilt) format
+
+  [Francois Marier]
+  * Bump debhelper compatibility to 7
+  * Add a watch file
+  * debian/control (dependencies)
+    - Depend on libjs-yui instead of yui (renamed after lenny)
+    - Add dependency on unzip
+    - Recommend php5-xmlrpc and aspell
+    - Suggest clamav
+    - Demoted mimetex to recommended
+  * Turn 'dbpersist' on by default in the generated config.php
+  * Include whitespace warning at the end of generated config.php
+  * Set the path to du, unzip and zip
+  * Fix a warning with E_STRICT is turned on
+
+ -- Xavier Oswald <xoswald@debian.org>  Sun, 20 Jun 2010 16:02:14 +0200
+
+moodle (1.8.2.dfsg-4) unstable; urgency=high
+
+  * Improve the fix for log URL filtering as suggested by Steffen Joeris
+    (MSA-09-0007 / CVE-2009-0500)
+  * Backport upstream fix for calendar export leakage
+    (MSA-09-0006 / CVE-2009-0501)
+
+ -- Francois Marier <francois@debian.org>  Thu, 12 Feb 2009 17:27:07 +1300
+
+moodle (1.8.2.dfsg-3) unstable; urgency=high
+
+  * Delete unused (but vulnerable) Spellchecker plugin to htmlarea
+    (MSA-09-0005, CVE-2008-5153)
+  * Hide images of deleted users (MSA-09-0001)
+  * Fix user pix disclosure (MSA-09-0002)
+  * Fix XSS vulnerabilities in HTML blocks (MSA-09-0004)
+  * Fix XSS vulnerabilities in logs (MSA-09-0007)
+  * Fix CSRF vulnerability in forum code (MSA-09-0008)
+
+ -- Francois Marier <francois@debian.org>  Mon, 02 Feb 2009 19:09:10 +1300
+
+moodle (1.8.2.dfsg-2) unstable; urgency=high
+
+  [ Dan Poltawski ]
+  * Patch SQL injection bug in hotpot module (MSA-08-0010)
+  * Fix XSS bug in logged urls (MDL-11414)
+  * Fix XSS bug in install script (MSA-08-0004)
+  * Fix insufficient access control in Login as feature (MSA-08-0003)
+  * Profiles of deleted users were accessible allowing for spam (MSA-08-0015)
+  * Deficincy in text cleaning functions allowed for XSS (MSA-08-0021)
+  * Fix CSRF in messaging settings (MSA-08-0023)
+  * Fix anonymous group creation and html injection (MDL-11759)
+  * Fix SQL injection bug in mnet (MDL-9288)
+  * Fix SQL injection bug in restore (MDL-11857)
+  * Insufficient cleaning of essay questions (MDL-12079)
+  * Fix insufficient cleaning of PARAM_HOST (MDL-12793)
+  * Fix XSS bug in logged urls (MDL-11414)
+  * Fix uncleaned params in wiki (MDL-14806)
+
+  [ Francois Marier ]
+  * Update html2text to prevent code execution attacks (closes: #508909)
+
+ -- Francois Marier <francois@debian.org>  Wed, 17 Dec 2008 13:37:10 +1300
+
+moodle (1.8.2.dfsg-1) unstable; urgency=high
+
+  * Replace html2text with a GPL alternative (closes: #507947)
+  * Fix XSS in the wiki module (CVE-2008-5432, closes: #508593)
+  * Add Dan Poltawski to the uploaders field
+
+ -- Francois Marier <francois@debian.org>  Tue, 16 Dec 2008 20:24:27 +1300
+
+moodle (1.8.2-2) unstable; urgency=high
+
+  * Adopt orphaned package (closes: #494642)
+  * Acknowledge security NMU (closes: #489533, #432264)
+  * Add Vcs-* fields to debian/control
+
+  Release-critical and security bugs:
+ 
+  * Depend on smarty instead of using the embedded copy that is shipped
+    with Moodle (closes: #471158, #488525, #504345)
+  * Patch security bug in the embedded (and customised) copy of phpmailer
+    (CVE-2007-3215, closes: #429339, #429190)
+  * Patch cross-site scripting bug (CVE-2008-3326, closes: #492492)
+  * Patch snoopy input sanitising (CVE-2008-4796, closes: #504235)
+  * Upgrade to new LGPL version of domxml-php4-to-php5 (closes: #496069)
+
+  Trivial bug fixes:
+
+  * Depend on zip (closes: #408995)
+  * Add mysql-client as an alternative to postgresql-client
+    (closes: #417554, #469094)
+  * Recommend php5-ldap (closes: #425839)
+  * Delete unnecessary script with bashisms (closes: #489634)
+
+  Lintian warnings:
+
+  * Bump Standards-Version to 3.8.0
+  * Add homepage field to debian/control
+  * Remove cvsignore file
+  * Remove extra license file
+  * Depend on yui instead of using an embedded copy
+
+ -- Francois Marier <francois@debian.org>  Fri, 07 Nov 2008 08:24:28 +1300
+
+moodle (1.8.2-1.3) unstable; urgency=high
+
+  * Non-maintainer upload by the Security Team.
+  * Fix broken HTML filtering which could be used to perform XSS attacks,
+    bypass restrictions or possibly execute arbitrary code
+    (CVE-2008-1502; Closes: #489533).
+
+ -- Nico Golde <nion@debian.org>  Sun, 20 Jul 2008 18:07:55 +0200
+
+moodle (1.8.2-1.2ubuntu2) intrepid; urgency=low
+
+  * SECURITY UPDATE: arbitrary code execution via multiple vectors.
+    - Add CVE-2008-1502.dpatch: upstream KSES lib fixes, thanks to Nico Golde.
+
+ -- Kees Cook <kees@ubuntu.com>  Wed, 22 Oct 2008 14:01:33 -0700
+
+moodle (1.8.2-1.2ubuntu1) intrepid; urgency=low
+
+  * Merge from debian unstable, remaining changes:
+    - Suggest php5-ldap
+    - Modify Maintainer value to match Debian-Maintainer-Field Spec
+    - debian/postinst ucf fixes
+    - drop use of wwwconfig (database code in postinst stolen from mythtv)
+
+ -- Oliver Grawert <ogra@ubuntu.com>  Thu, 01 May 2008 02:19:09 +0100
+
+moodle (1.8.2-1.2) unstable; urgency=low
+
+  * Non-maintainer upload to fix pending l10n issues.
+  * Debconf translations:
+    - Japanese. Closes: #413105
+    - Spanish. Closes: #413779
+    - German. Closes: #415888
+    - Dutch. Closes: #425711
+    - Slovak. Closes: #437511
+    - Brazilian Portuguese. Closes: #437680
+    - Finnish. Closes: #468212
+    - Basque. Closes: #470362
+    - Galician. Closes: #470430
+    - Vietnamese. Closes: #470602
+    - Russian. Closes: #470790
+  * [Lintian] Fix format of NEWS.Debian
+  * [Lintian] Move debconf dependency to Pre-Depends as it is used
+    in the preinst script
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 14 Mar 2008 07:33:53 +0100
+
+moodle (1.8.2-1.1) unstable; urgency=low
+
+  * Non-maintainer upload from the Zurich BSP
+  * Added dependency on postgresql-client (Closes: #431589)
+
+ -- Tobias Klauser <tklauser@access.unizh.ch>  Sat, 12 Jan 2008 17:04:03 +0100
+
+moodle (1.8.2-1ubuntu4) hardy; urgency=low
+
+  * debian/postinst: ... except we should explicitly pass --debconf-ok
+    to ucf, for compatibility with older versions.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 28 Mar 2008 01:16:24 +0000
+
+moodle (1.8.2-1ubuntu3) hardy; urgency=low
+
+  * debian/postinst: Only call db_stop after ucf has been run in
+    handle_config(), since ucf itself uses debconf; and drop the
+    "exec 0<&1" workaround which no longer matters. LP: #203844
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 28 Mar 2008 00:37:00 +0000
+
+moodle (1.8.2-1ubuntu2) gutsy; urgency=low
+
+  * Package changed to avoid use of wwwconfig; borrowed database setup code
+    from Ubuntu mythtv package.
+
+ -- Matt Oquist <moquist@majen.net>  Sat, 28 Jul 2007 16:14:18 +0200
+
+moodle (1.8.2-1ubuntu1) gutsy; urgency=low
+
+  * Merge from Debian unstable. Remaining Ubuntu changes:
+    - Depends on postgresql-client
+    - Suggest php5-ldap
+    - Modify Maintainer value to match Debian-Maintainer-Field Spec
+
+ -- Vincent Legout <bixente44@gmail.com>  Tue, 17 Jul 2007 16:14:18 +0200
+
+moodle (1.8.2-1) unstable; urgency=low
+
+  * New upstream release, fixes security bug, closes: #432264
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon, 09 Jul 2007 00:24:17 +0200
+
+moodle (1.8.1-1ubuntu1) gutsy; urgency=low
+
+  * Merge from debian unstable, remaining changes:
+    - Depends on postgresql-client
+    - Suggest php5-ldap
+    - Set apache2 as default in debian/templates
+    - Update Maintainer field in debian/control
+
+ -- Luca Falavigna <dktrkranz@ubuntu.com>  Fri, 15 Jun 2007 23:33:55 +0100
+
+moodle (1.8.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Add php5-curl | php4-curl dependency for the new network features
+  * No longer depend on php4 and apache 1
+
+ -- Isaac Clerencia <isaac@debian.org>  Fri, 15 Jun 2007 14:12:43 +0200
+
+moodle (1.7.2-1ubuntu2) gutsy; urgency=low
+
+  * Switch back to postgresql-client and postgresql (LP: 110054)
+  * Suggest php5-ldap (LP: 107713)
+
+ -- Luca Falavigna <dktrkranz@ubuntu.com>  Sun, 10 Jun 2007 23:56:16 +0200
+
+moodle (1.7.2-1ubuntu1) gutsy; urgency=low
+
+  * Merge from Debian unstable. Remaining Ubuntu changes:
+    + debian/control:
+      - php5 by default.
+      - Add postgresql-client-8.1 to Depends.
+      - Update Recommends alternate to postgresql-8.1.
+    + debian/templates: Ensure the default corresponds to the install-
+      time dependencies (apache2).
+  * Modify Maintainer value to match Debian-Maintainer-Field Spec
+
+ -- Arthur Loiret <freacky22527@free.fr>  Sun,  3 Jun 2007 20:53:01 +0200
+
+moodle (1.7.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Fri, 01 Jun 2007 12:54:59 +0200
+
+moodle (1.7.1-1) experimental; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Wed, 24 Jan 2007 14:21:34 +0100
+
+moodle (1.7+20061215-1) experimental; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Fri, 15 Dec 2006 13:39:14 +0100
+
+moodle (1.6.3-2ubuntu1) feisty; urgency=low
+
+  * Merge from debian unstable, remaining changes:
+    - debian/control:
+      + php5 by default.
+      + Add postgresql-client-8.1 to Depends.
+      + Update Recommends alternate to postgresql-8.1.
+    - debian/templates: Ensure the default corresponds to the install-
+      time dependencies (apache2).
+
+ -- Kees Cook <kees@ubuntu.com>  Mon, 18 Dec 2006 12:28:27 -0800
+
+moodle (1.6.3-2) unstable; urgency=high
+
+  * Urgency high as it fixes a security bug and should enter Etch ASAP
+  * Fix security bug in the forum module (discuss.php)
+
+ -- Isaac Clerencia <isaac@debian.org>  Thu, 14 Dec 2006 14:14:27 +0100
+
+moodle (1.6.3-1ubuntu1) feisty; urgency=low
+
+  * Merge from debian unstable.  Remaining Ubuntu changes:
+    - debian/control:
+      + php5 by default.
+      + Add postgresql-client-8.1 to Depends.
+      + Update Recommends alternate to postgresql-8.1.
+    - debian/templates: Ensure the default corresponds to the install-
+      time dependencies (apache2).
+
+ -- Kees Cook <kees@ubuntu.com>  Wed, 29 Nov 2006 16:08:37 -0800
+
+moodle (1.6.3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Thu, 19 Oct 2006 11:37:40 +0200
+
+moodle (1.6.2+20060930-1) unstable; urgency=high
+
+  * Urgency high because it fixes a critical security hole
+  * New upstream release, closes: #390294, critical security hole
+  * Notify the user if the selected server isn't installed, select apache2
+    by default instead of apache, closes: #389806
+  * Add a configuration section for php5 in apache.conf, closes: #387609
+
+ -- Isaac Clerencia <isaac@debian.org>  Sat, 30 Sep 2006 12:14:29 +0100
+
+moodle (1.6.2-1ubuntu1.1) edgy; urgency=low
+
+  * SECURITY UPDATE: SQL injection vulnerability
+  * Add '01_sql-injection-fix.dpatch': Correctly escape tag options.
+  * References:
+    CVE-2006-5219
+    http://cvs.moodle.com/blog/index.php?r1=1.18.2.2&r2=1.18.2.3
+
+ -- Kees Cook <kees@ubuntu.com>  Wed, 11 Oct 2006 15:25:15 -0700
+
+moodle (1.6.2-1ubuntu1) edgy; urgency=low
+
+  * Merge from Debian unstable. The following Ubuntu changes remain:
+    - debian/control:
+      + Apply patch from Ubuntu #59472 to use php5
+        (Closes Ubuntu: #59472),
+      + Add postgresql-client-8.1 to Depends (Closes Ubuntu: #51813),
+      + Update Recommends alternate to postgresql-8.1,
+    - debian/templates: Ensure the default corresponds to the install-
+      time dependencies (apache2) so we can avoid the mess that was
+      worked around in dapper-security.
+
+ -- Daniel T Chen <crimsun@ubuntu.com>  Sat, 23 Sep 2006 22:26:13 -0400
+
+moodle (1.6.2-1) unstable; urgency=low
+
+  * New upstream release, closes: #387177
+  * Debconf translation updates/additions:
+    * Czech, closes: #371834
+    * French, closes: 372713
+    * Portuguese, closes: #381194
+  * Install config-dist.php in the documentation directory, closes: #386476
+
+ -- Isaac Clerencia <isaac@debian.org>  Tue, 12 Sep 2006 22:06:34 +0200
+
+moodle (1.6.1+20060825-1) unstable; urgency=low
+
+  * New upstream release
+  * Moodle neither uses nor plans to use ADODB_Pager, so it's not affected by
+    #360396, but include patch for it anyway, just in case somebody decides to
+    use it out of the blue
+
+ -- Isaac Clerencia <isaac@debian.org>  Fri, 25 Aug 2006 08:56:42 +0200
+
+moodle (1.6-2ubuntu1) edgy; urgency=low
+
+  [ Ubuntu Merge-o-Matic ]
+  * Merge from debian unstable.
+
+ -- Daniel T Chen <crimsun@ubuntu.com>  Thu,  6 Jul 2006 20:30:30 -0400
+
+moodle (1.6-2) unstable; urgency=low
+
+  * Fix two problems in preinst, thanks to Jordi Mallach's workmate
+  * Ship cron file in package instead of generating it at postinst
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon,  3 Jul 2006 10:25:31 +0200
+
+moodle (1.6-1ubuntu1) edgy; urgency=low
+
+  * Merge from debian unstable:
+    - Use Debian Sid's packaging save in debian/templates where we need
+      to make sure the default corresponds to the install-time
+      dependencies (apache2) so we can avoid the mess that was worked
+      around in dapper-security.
+
+ -- Daniel T Chen <crimsun@ubuntu.com>  Fri, 30 Jun 2006 19:21:20 +0100
+
+moodle (1.6-1) unstable; urgency=low
+
+  * New upstream release, needs newer PHP version, so updated versioned
+    dependencies
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon, 19 Jun 2006 18:21:07 +0200
+
+moodle (1.5.4-1) unstable; urgency=low
+
+  * New upstream release
+  * Depend on ucf
+  * Move debhelper to Build-Depends as it's used in the clean target of
+    debian/rules
+  * Add colons to debconf template short descriptions
+  * Bumped Standard-Versions to 3.7.2, no changes needed
+
+ -- Isaac Clerencia <isaac@debian.org>  Tue, 30 May 2006 17:48:11 +0200
+
+moodle (1.5.3+20060206-1) unstable; urgency=low
+
+  * New package created from 1.5.3+ branch, which includes several bugfixes
+  * Allow moodle to be installed using php5 instead of php4, closes: #351298
+  * Changed apache | httpd to apache2-mpm-prefork | httpd
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon,  6 Feb 2006 09:49:09 +0100
+
+moodle (1.5.3+20060108-2) unstable; urgency=low
+
+  * Throw cronjob output to /dev/null, closes: #349971 
+
+ -- Isaac Clerencia <isaac@debian.org>  Thu, 26 Jan 2006 13:01:58 +0100
+
+moodle (1.5.3+20060108-1ubuntu1) dapper; urgency=low
+
+  * Resynchronise with Debian.
+
+ -- Daniel T Chen <crimsun@fungus.sh.nu>  Mon, 09 Jan 2006 13:49:39 +0000
+
+moodle (1.5.3+20060108-1) unstable; urgency=low
+
+  * New package created from 1.5.3+ branch, which closes: #346509, a
+    security bug in the ADODB code included in Moodle
+  * Check for /usr/share/moodle/admin/cron.php existence in the cronjob,
+    closes: #342304
+  * Use php4-cli instead of wget to run the cronjob, closes: #345930
+
+ -- Isaac Clerencia <isaac@debian.org>  Sun,  8 Jan 2006 17:09:57 +0100
+
+moodle (1.5.3-1ubuntu1) dapper; urgency=low
+
+  * Resynchronise with Debian.
+
+ -- Stephan Hermann <sh@sourcecode.de>  Wed, 28 Dec 2005 18:25:41 +0100
+
+moodle (1.5.3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon, 21 Nov 2005 21:09:21 +0100
+
+moodle (1.5.2-1ubuntu1) breezy; urgency=low
+
+  * Resync with debian (security update)
+  * changed dependencys to php5
+  * changed apache dependency to apache2 
+  * References
+    CAN-2005-2247
+
+ -- Andrew Mitchell <ajmitch@ubuntu.com>  Thu, 13 Oct 2005 02:00:59 +1300
+
+moodle (1.5.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Wed, 20 Jul 2005 15:13:41 +0200
+
+moodle (1.5.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@debian.org>  Tue, 12 Jul 2005 09:50:59 +0200
+
+moodle (1.5-1) unstable; urgency=low
+
+  * New upstream release
+  * Added Vietnamese debconf translation, closes: #312961
+
+ -- Isaac Clerencia <isaac@debian.org>  Wed, 22 Jun 2005 22:18:26 +0200
+
+moodle (1.4.4.dfsg.1-3) unstable; urgency=high
+
+  * Urgency high as this upload closes a security bug
+  * Remove admin/delete.php on installation, fixes an important security bug 
+
+ -- Isaac Clerencia <isaac@debian.org>  Mon, 30 May 2005 20:45:33 +0200
+
+moodle (1.4.4.dfsg.1-2) unstable; urgency=low
+
+  * Use find | xargs instead of rm to remove old sessions, closes: #300266
+
+ -- Isaac Clerencia <isaac@debian.org>  Fri, 18 Mar 2005 18:47:32 +0100
+
+moodle (1.4.4.dfsg.1-1) unstable; urgency=high
+
+  * Urgency high as it closes a release critical bug and fixes some security
+  problems
+
+  * New upstream release
+
+  * Replaced non-free fonts with free fonts for some languages in the original
+  tarball, closes: #298938
+
+  * Set perms for /etc/moodle/config.php to 640 instead of 644, closes: #297237
+
+  * Use new option $CFG->respectsessionsettings = true; to clean sessions and
+  remove old sessions from /var/lib/moodle/sessions: closes: #295124
+
+  * Added cs.po debconf template translation, closes: #298208
+
+  * Remove /var/lib/moodle/ when purging
+
+ -- Isaac Clerencia <isaac@debian.org>  Thu, 10 Mar 2005 01:02:48 +0100
+
+moodle (1.4.3-1) unstable; urgency=high
+
+  * Urgency high as upstream release fixes several security bugs
+  * New upstream release
+  * Write database creation errors and warn the user about it, 
+  closes: #285842, #285842
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Wed, 29 Dec 2004 00:49:52 +0100
+
+moodle (1.4.2-2) unstable; urgency=low
+
+  * Create user before creating database in postinst 
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Tue, 23 Nov 2004 10:55:28 +0100
+
+moodle (1.4.2-1) unstable; urgency=high
+
+  * New upstream release
+  * Urgency high, as this upstream release closes several security bugs
+  * Added some extra information to README.Debian, thanks to Kevin Coyner
+  * Added apache2 as a choice for autoconfiguration, closes: #275444
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Wed, 10 Nov 2004 13:18:41 +0100
+
+moodle (1.4.1-2) unstable; urgency=medium
+
+  * Urgency medium, as it fixes the "default username" problem, which is a
+    www-config bug but affects lots of moodle users
+  * Use moodle as default database username, currently uses www-data which
+    causes www-config to fail to create the database
+  * Enabled Tex math filter and added mimetex in Depends:
+  * Removed an extra line from README.Debian
+  * Removed debian/overrides/ for lintian
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Sun, 24 Oct 2004 12:16:39 +0200
+
+moodle (1.4.1-1) unstable; urgency=low
+
+  * New upstream release, closes: #270855
+  * /var/lib/moodle is now owned by www-data, closes: #258283
+  * Added README.Debian with some hints for database setup,
+    closes: #272553, #270851
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Sat,  2 Oct 2004 00:37:53 +0200
+
+moodle (1.4-1) unstable; urgency=low
+
+  * New upstream release, closes: #256218, #256219
+  * Switched to a file in conf.d instead of an include in http.conf
+  * Added DirectoryIndex index.php to apache.conf file, closes: #247554
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Tue,  7 Sep 2004 22:07:10 +0200
+
+moodle (1.3.3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Mon, 19 Jul 2004 11:28:48 +0200
+
+moodle (1.3.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Mon, 19 Jul 2004 11:16:45 +0200
+
+moodle (1.3.1-1) unstable; urgency=low
+
+  * New upstream release, closes: #252693
+  * Added "exec 0<&1" to postinst to fix hang when ucf asks the user
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Fri,  4 Jun 2004 23:45:37 +0200
+
+moodle (1.2.1-3) unstable; urgency=low
+
+  * Added a choice to use apache-perl in addition to apache and apache-ssl
+  * Changed back priority to Optional, because no longer depends on php4-gd2
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Thu, 22 Apr 2004 11:32:40 +0200
+
+moodle (1.2.1-2) unstable; urgency=low
+
+  * Changed depends on php4-gd2 to php4-gd, closes: #243717
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Tue, 20 Apr 2004 23:16:47 +0200
+
+moodle (1.2.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Added ucf for better handling of config files
+  * Changed priority to Extra
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Tue, 30 Mar 2004 22:01:33 +0200
+
+moodle (1.1.1-4) unstable; urgency=low
+
+  * Added French debconf templates translation, closes: #235572
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Mon,  1 Mar 2004 12:22:03 +0100
+
+moodle (1.1.1-3) unstable; urgency=low
+
+  * Fixed debconf stuff by adding POTFILES.in, closes: #233114
+    Thanks to Martin Quirson.
+  * Fixed bug in config generation that caused passwords including '$'
+    broke the autentication
+  * Removed moodle prefix from some debian/ files
+  * Changed depend on debconf to misc:Depends
+  * Updated version for debhelper build-depend to 4.1.13
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Tue, 17 Feb 2004 23:55:45 +0100
+
+moodle (1.1.1-2) unstable; urgency=low
+
+  * Now depends on php4-pgsql or php4-mysql not both
+  * Added recommends for postgresql or mysql-serverl
+  * Added documentation dir
+  * Added wget in Depends: and changed cron.d to use wget
+  * Fixed postinst to put the correct protocol in config.php and cron.d/moodle
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Thu, 27 Nov 2003 23:14:11 +0100
+
+moodle (1.1.1-1) unstable; urgency=low
+
+  * Initial Debian Release, closes: #222475
+
+ -- Isaac Clerencia <isaac@sindominio.net>  Thu, 27 Nov 2003 23:14:11 +0100
+

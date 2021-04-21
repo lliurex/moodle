@@ -1,0 +1,82 @@
+#!/usr/bin/make -f
+# debian/rules for Moodle package.
+# Copyright 2010 Tomasz Muras <tomasz@muras.eu>
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export SHELL = /bin/bash
+
+VERSION    := $(shell head -1 debian/changelog | sed 's/.*(//;s/).*//')
+UPSTREAM   := $(shell head -1 debian/changelog | sed 's/.*(//;s/-.?*).*//')
+MAINTAINER := $(shell grep ^Maintainer: debian/control | sed 's/^Maintainer: //')
+
+%:
+	dh $@
+
+override_dh_lintian:
+	# remove unnecessary license and copyright files
+	rm debian/moodle/usr/share/moodle/lib/bennu/COPYRIGHT.txt || true
+	rm debian/moodle/usr/share/moodle/lib/bennu/LICENSE.txt || true
+	rm debian/moodle/usr/share/moodle/lib/phpmailer/LICENSE || true
+	#rm debian/moodle/usr/share/moodle/lib/minify/LICENSE.txt
+	rm debian/moodle/usr/share/moodle/lib/tcpdf/LICENSE.TXT || true
+	rm debian/moodle/usr/share/moodle/lib/xhprof/LICENSE || true
+	rm debian/moodle/usr/share/moodle/lib/editor/tinymce/tiny_mce/3.5.11/license.txt || true
+	rm debian/moodle/usr/share/moodle/lib/editor/atto/yui/src/rangy/js/license.txt || true
+	rm debian/moodle/usr/share/moodle/lib/tcpdf/fonts/freefont-20120503/COPYING || true
+	rm debian/moodle/usr/share/moodle/lib/yui/license.txt || true
+	rm debian/moodle/usr/share/moodle/lib/google/LICENSE || true
+	rm debian/moodle/usr/share/moodle/lib/jquery/MIT-LICENSE.txt || true
+	rm debian/moodle/usr/share/moodle/lib/markdown/License.md || true
+	rm debian/moodle/usr/share/moodle/pix/f/FileTypesIcons-LICENSE.txt || true
+	rm debian/moodle/usr/share/moodle/pix/f/Oxygen-LICENSE.txt || true
+	rm debian/moodle/usr/share/moodle/lib/htmlpurifier/LICENSE || true
+	rm debian/moodle/usr/share/moodle/lib/lessphp/LICENSE || true
+	rm debian/moodle/usr/share/moodle/lib/mustache/LICENSE || true
+	rm debian/moodle/usr/share/moodle/lib/requirejs/LICENSE || true
+	rm debian/moodle/usr/share/moodle/mod/assign/feedback/editpdf/fpdi/LICENSE || true
+	
+	# remove unnecessary files
+	rm debian/moodle/usr/share/moodle/mod/chat/chatd.php || true
+	
+	#remove more unnecessary files (still found in moodle-2.7.11)
+	find debian/moodle -type f -name .cvsignore -delete
+	
+	# remove files with missing source
+	rm debian/moodle/usr/share/moodle/filter/tex/*mimetex* || true
+	#rm debian/moodle/usr/share/moodle/lib/flowplayer/*
+	#rmdir debian/moodle/usr/share/moodle/lib/flowplayer
+	
+	# fix permissions
+	find debian/moodle/usr -type f -exec chmod 644 {} \;
+	find debian/moodle/usr -type d -exec chmod 755 {} \;
+	chmod 755 debian/moodle/usr/share/moodle/admin/mailout-debugger.php || true
+	chmod 755 debian/moodle/usr/share/moodle/filter/algebra/algebra2tex.pl || true
+	chmod 755 debian/moodle/usr/share/moodle/admin/process_email.php || true
+	
+	# remove libraries which depend upon non-free stuff
+	cd debian/moodle/usr/share/moodle/lib && rm -r phpexcel || true	
+	# un-bundle libraries (symlinks created later via debian/links)
+	#rm debian/moodle/usr/share/moodle/lib/phpmailer/class.{phpmailer,smtp}.php
+	# set dir permissions
+	chown www-data:www-data debian/moodle/var/lib/moodle
+	chmod 0750 debian/moodle/var/lib/moodle
+	
+	dh_lintian
+
+override_dh_builddeb:
+	dh_builddeb
+
+
+#
+# tar zxf moodle_3.0.3.orig.tar.gz
+# rm -rf moodle-3.0.3+dfsg
+# mv moodle moodle-3.0.3+dfsg
+#
+dfsg:
+	rm lib/tcpdf/include/sRGB.icc lib/flowplayer/flowplayer.audio-3.2.11.swf
+	rm -r lib/phpexcel/PHPExcel/Shared/OLE*
+
+# tar zcf moodle_3.0.3+dfsg.orig.tar.gz moodle-3.0.3+dfsg
+
