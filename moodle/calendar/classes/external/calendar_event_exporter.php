@@ -52,9 +52,6 @@ class calendar_event_exporter extends event_exporter_base {
             'type' => PARAM_BOOL,
             'default' => false,
         ];
-        $values['calendareventtype'] = [
-            'type' => PARAM_TEXT,
-        ];
         $values['popupname'] = [
             'type' => PARAM_RAW,
         ];
@@ -112,7 +109,6 @@ class calendar_event_exporter extends event_exporter_base {
         } else if ($event->get_type() == 'category') {
             $url = $event->get_category()->get_proxied_instance()->get_view_link();
         } else {
-            // TODO MDL-58866 We do not have any way to find urls for events outside of course modules.
             $url = course_get_url($hascourse ? $course : SITEID);
         }
 
@@ -120,7 +116,11 @@ class calendar_event_exporter extends event_exporter_base {
         $values['islastday'] = false;
         $today = $this->related['type']->timestamp_to_date_array($this->related['today']);
 
-        $values['popupname'] = $this->event->get_name();
+        if ($hascourse) {
+            $values['popupname'] = external_format_string($this->event->get_name(), \context_course::instance($course->id), true);
+        } else {
+            $values['popupname'] = external_format_string($this->event->get_name(), \context_system::instance(), true);
+        }
 
         $times = $this->event->get_times();
         if ($duration = $times->get_duration()) {
@@ -171,8 +171,6 @@ class calendar_event_exporter extends event_exporter_base {
             ];
             $values['popupname'] = get_string('eventnameandcourse', 'calendar', $eventnameparams);
         }
-
-        $values['calendareventtype'] = $this->get_calendar_event_type();
 
         if ($event->get_course_module()) {
             $values = array_merge($values, $this->get_module_timestamp_limits($event));

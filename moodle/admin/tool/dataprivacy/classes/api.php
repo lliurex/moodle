@@ -258,7 +258,20 @@ class api {
         // The user making the request.
         $datarequest->set('requestedby', $requestinguser);
         // Set status.
-        $datarequest->set('status', self::DATAREQUEST_STATUS_AWAITING_APPROVAL);
+        $status = self::DATAREQUEST_STATUS_AWAITING_APPROVAL;
+        if (self::is_automatic_request_approval_on($type)) {
+            // Set status to approved if automatic data request approval is enabled.
+            $status = self::DATAREQUEST_STATUS_APPROVED;
+            // Set the privacy officer field if the one making the data request is a privacy officer.
+            if (self::is_site_dpo($requestinguser)) {
+                $datarequest->set('dpo', $requestinguser);
+            }
+            // Mark this request as system approved.
+            $datarequest->set('systemapproved', true);
+            // No need to notify privacy officer(s) about automatically approved data requests.
+            $notify = false;
+        }
+        $datarequest->set('status', $status);
         // Set request type.
         $datarequest->set('type', $type);
         // Set request comments.
@@ -269,13 +282,22 @@ class api {
         // Store subject access request.
         $datarequest->create();
 
+        // Queue the ad-hoc task for automatically approved data requests.
+        if ($status == self::DATAREQUEST_STATUS_APPROVED) {
+            $userid = null;
+            if ($type == self::DATAREQUEST_TYPE_EXPORT) {
+                $userid = $foruser;
+            }
+            self::queue_data_request_task($datarequest->get('id'), $userid);
+        }
+
         if ($notify) {
             // Get the list of the site Data Protection Officers.
-            $dpos = api::get_site_dpos();
+            $dpos = self::get_site_dpos();
 
             // Email the data request to the Data Protection Officer(s)/Admin(s).
             foreach ($dpos as $dpo) {
-                api::notify_dpo($dpo, $datarequest);
+                self::notify_dpo($dpo, $datarequest);
             }
         }
 
@@ -614,16 +636,21 @@ class api {
             throw new moodle_exception('errorrequestnotwaitingforapproval', 'tool_dataprivacy');
         }
 
+        // Check if current user has permission to approve delete data request.
+        if ($request->get('type') == self::DATAREQUEST_TYPE_DELETE && !self::can_create_data_deletion_request_for_other()) {
+            throw new required_capability_exception(context_system::instance(),
+                'tool/dataprivacy:requestdeleteforotheruser', 'nopermissions', '');
+        }
+
         // Update the status and the DPO.
         $result = self::update_request_status($requestid, self::DATAREQUEST_STATUS_APPROVED, $USER->id);
 
         // Fire an ad hoc task to initiate the data request process.
-        $task = new process_data_request_task();
-        $task->set_custom_data(['requestid' => $requestid]);
+        $userid = null;
         if ($request->get('type') == self::DATAREQUEST_TYPE_EXPORT) {
-            $task->set_userid($request->get('userid'));
+            $userid = $request->get('userid');
         }
-        manager::queue_adhoc_task($task, true);
+        self::queue_data_request_task($requestid, $userid);
 
         return $result;
     }
@@ -651,6 +678,12 @@ class api {
         $request = new data_request($requestid);
         if ($request->get('status') != self::DATAREQUEST_STATUS_AWAITING_APPROVAL) {
             throw new moodle_exception('errorrequestnotwaitingforapproval', 'tool_dataprivacy');
+        }
+
+        // Check if current user has permission to reject delete data request.
+        if ($request->get('type') == self::DATAREQUEST_TYPE_DELETE && !self::can_create_data_deletion_request_for_other()) {
+            throw new required_capability_exception(context_system::instance(),
+                'tool/dataprivacy:requestdeleteforotheruser', 'nopermissions', '');
         }
 
         // Update the status and the DPO.
@@ -700,7 +733,7 @@ class api {
             'requestedby' => $requestedby->fullname,
             'requesttype' => $typetext,
             'requestdate' => userdate($requestdata->timecreated),
-            'requestorigin' => $SITE->fullname,
+            'requestorigin' => format_string($SITE->fullname, true, ['context' => context_system::instance()]),
             'requestoriginurl' => new moodle_url('/'),
             'requestcomments' => $requestdata->messagehtml,
             'datarequestsurl' => $datarequestsurl
@@ -750,6 +783,49 @@ class api {
         require_capability('tool/dataprivacy:makedatarequestsforchildren', $usercontext, $requester);
 
         return true;
+    }
+
+    /**
+     * Check if user has permisson to create data deletion request for themselves.
+     *
+     * @param int|null $userid ID of the user.
+     * @return bool
+     * @throws coding_exception
+     */
+    public static function can_create_data_deletion_request_for_self(int $userid = null): bool {
+        global $USER;
+        $userid = $userid ?: $USER->id;
+        return has_capability('tool/dataprivacy:requestdelete', \context_user::instance($userid), $userid)
+            && !is_primary_admin($userid);
+    }
+
+    /**
+     * Check if user has permission to create data deletion request for another user.
+     *
+     * @param int|null $userid ID of the user.
+     * @return bool
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public static function can_create_data_deletion_request_for_other(int $userid = null): bool {
+        global $USER;
+        $userid = $userid ?: $USER->id;
+        return has_capability('tool/dataprivacy:requestdeleteforotheruser', context_system::instance(), $userid);
+    }
+
+    /**
+     * Check if parent can create data deletion request for their children.
+     *
+     * @param int $userid ID of a user being requested.
+     * @param int|null $requesterid ID of a user making request.
+     * @return bool
+     * @throws coding_exception
+     */
+    public static function can_create_data_deletion_request_for_children(int $userid, int $requesterid = null): bool {
+        global $USER;
+        $requesterid = $requesterid ?: $USER->id;
+        return has_capability('tool/dataprivacy:makedatadeletionrequestsforchildren', \context_user::instance($userid),
+            $requesterid) && !is_primary_admin($userid);
     }
 
     /**
@@ -1221,5 +1297,36 @@ class api {
         }
 
         return $formattedtime;
+    }
+
+    /**
+     * Whether automatic data request approval is turned on or not for the given request type.
+     *
+     * @param int $type The request type.
+     * @return bool
+     */
+    public static function is_automatic_request_approval_on(int $type): bool {
+        switch ($type) {
+            case self::DATAREQUEST_TYPE_EXPORT:
+                return !empty(get_config('tool_dataprivacy', 'automaticdataexportapproval'));
+            case self::DATAREQUEST_TYPE_DELETE:
+                return !empty(get_config('tool_dataprivacy', 'automaticdatadeletionapproval'));
+        }
+        return false;
+    }
+
+    /**
+     * Creates an ad-hoc task for the data request.
+     *
+     * @param int $requestid The data request ID.
+     * @param int $userid Optional. The user ID to run the task as, if necessary.
+     */
+    public static function queue_data_request_task(int $requestid, int $userid = null): void {
+        $task = new process_data_request_task();
+        $task->set_custom_data(['requestid' => $requestid]);
+        if ($userid) {
+            $task->set_userid($userid);
+        }
+        manager::queue_adhoc_task($task, true);
     }
 }

@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
 /** Include essential files */
 require_once($CFG->libdir . '/grade/constants.php');
 
@@ -674,16 +676,18 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
 function grade_get_setting($courseid, $name, $default=null, $resetcache=false) {
     global $DB;
 
-    static $cache = array();
+    $cache = cache::make('core', 'gradesetting');
+    $gradesetting = $cache->get($courseid) ?: array();
 
-    if ($resetcache or !array_key_exists($courseid, $cache)) {
-        $cache[$courseid] = array();
+    if ($resetcache or empty($gradesetting)) {
+        $gradesetting = array();
+        $cache->set($courseid, $gradesetting);
 
     } else if (is_null($name)) {
         return null;
 
-    } else if (array_key_exists($name, $cache[$courseid])) {
-        return $cache[$courseid][$name];
+    } else if (array_key_exists($name, $gradesetting)) {
+        return $gradesetting[$name];
     }
 
     if (!$data = $DB->get_record('grade_settings', array('courseid'=>$courseid, 'name'=>$name))) {
@@ -696,7 +700,8 @@ function grade_get_setting($courseid, $name, $default=null, $resetcache=false) {
         $result = $default;
     }
 
-    $cache[$courseid][$name] = $result;
+    $gradesetting[$name] = $result;
+    $cache->set($courseid, $gradesetting);
     return $result;
 }
 
@@ -953,14 +958,11 @@ function grade_get_letters($context=null) {
         return array('93'=>'A', '90'=>'A-', '87'=>'B+', '83'=>'B', '80'=>'B-', '77'=>'C+', '73'=>'C', '70'=>'C-', '67'=>'D+', '60'=>'D', '0'=>'F');
     }
 
-    static $cache = array();
+    $cache = cache::make('core', 'grade_letters');
+    $data = $cache->get($context->id);
 
-    if (array_key_exists($context->id, $cache)) {
-        return $cache[$context->id];
-    }
-
-    if (count($cache) > 100) {
-        $cache = array(); // cache size limit
+    if (!empty($data)) {
+        return $data;
     }
 
     $letters = array();
@@ -976,13 +978,15 @@ function grade_get_letters($context=null) {
         }
 
         if (!empty($letters)) {
-            $cache[$context->id] = $letters;
+            // Cache the grade letters for this context.
+            $cache->set($context->id, $letters);
             return $letters;
         }
     }
 
     $letters = grade_get_letters(null);
-    $cache[$context->id] = $letters;
+    // Cache the grade letters for this context.
+    $cache->set($context->id, $letters);
     return $letters;
 }
 
@@ -1207,6 +1211,7 @@ function grade_regrade_final_grades($courseid, $userid=null, $updated_item=null,
     $failed = 0;
 
     while (count($finalids) < count($gids)) { // work until all grades are final or error found
+        $count = 0;
         foreach ($gids as $gid) {
             if (in_array($gid, $finalids)) {
                 continue; // already final
@@ -1261,7 +1266,7 @@ function grade_regrade_final_grades($courseid, $userid=null, $updated_item=null,
                 if ($updateddependencies === false) {
                     // If no direct descendants are marked as updated, then we don't need to update this grade item. We then mark it
                     // as final.
-
+                    $count++;
                     $finalids[] = $gid;
                     continue;
                 }
@@ -1280,6 +1285,7 @@ function grade_regrade_final_grades($courseid, $userid=null, $updated_item=null,
                 } else {
                     $grade_items[$gid]->needsupdate = 0;
                 }
+                $count++;
                 $finalids[] = $gid;
                 $updatedids[] = $gid;
 
@@ -1289,7 +1295,7 @@ function grade_regrade_final_grades($courseid, $userid=null, $updated_item=null,
             }
         }
 
-        if (count($finalids) == 0) {
+        if ($count == 0) {
             $failed++;
         } else {
             $failed = 0;
@@ -1426,6 +1432,9 @@ function remove_grade_letters($context, $showfeedback) {
     if ($showfeedback) {
         echo $OUTPUT->notification($strdeleted.' - '.get_string('letters', 'grades'), 'notifysuccess');
     }
+
+    $cache = cache::make('core', 'grade_letters');
+    $cache->delete($context->id);
 }
 
 /**
@@ -1551,58 +1560,6 @@ function grade_user_unenrol($courseid, $userid) {
 }
 
 /**
- * Grading cron job. Performs background clean up on the gradebook
- */
-function grade_cron() {
-    global $CFG, $DB;
-
-    $now = time();
-
-    $sql = "SELECT i.*
-              FROM {grade_items} i
-             WHERE i.locked = 0 AND i.locktime > 0 AND i.locktime < ? AND EXISTS (
-                SELECT 'x' FROM {grade_items} c WHERE c.itemtype='course' AND c.needsupdate=0 AND c.courseid=i.courseid)";
-
-    // go through all courses that have proper final grades and lock them if needed
-    $rs = $DB->get_recordset_sql($sql, array($now));
-    foreach ($rs as $item) {
-        $grade_item = new grade_item($item, false);
-        $grade_item->locked = $now;
-        $grade_item->update('locktime');
-    }
-    $rs->close();
-
-    $grade_inst = new grade_grade();
-    $fields = 'g.'.implode(',g.', $grade_inst->required_fields);
-
-    $sql = "SELECT $fields
-              FROM {grade_grades} g, {grade_items} i
-             WHERE g.locked = 0 AND g.locktime > 0 AND g.locktime < ? AND g.itemid=i.id AND EXISTS (
-                SELECT 'x' FROM {grade_items} c WHERE c.itemtype='course' AND c.needsupdate=0 AND c.courseid=i.courseid)";
-
-    // go through all courses that have proper final grades and lock them if needed
-    $rs = $DB->get_recordset_sql($sql, array($now));
-    foreach ($rs as $grade) {
-        $grade_grade = new grade_grade($grade, false);
-        $grade_grade->locked = $now;
-        $grade_grade->update('locktime');
-    }
-    $rs->close();
-
-    //TODO: do not run this cleanup every cron invocation
-    // cleanup history tables
-    if (!empty($CFG->gradehistorylifetime)) {  // value in days
-        $histlifetime = $now - ($CFG->gradehistorylifetime * 3600 * 24);
-        $tables = array('grade_outcomes_history', 'grade_categories_history', 'grade_items_history', 'grade_grades_history', 'scale_history');
-        foreach ($tables as $table) {
-            if ($DB->delete_records_select($table, "timemodified < ?", array($histlifetime))) {
-                mtrace("    Deleted old grade history records from '$table'");
-            }
-        }
-    }
-}
-
-/**
  * Reset all course grades, refetch from the activities and recalculate
  *
  * @param int $courseid The course to reset
@@ -1668,4 +1625,23 @@ function grade_floats_different($f1, $f2) {
  */
 function grade_floats_equal($f1, $f2) {
     return (grade_floatval($f1) === grade_floatval($f2));
+}
+
+/**
+ * Get the most appropriate grade date for a grade item given the user that the grade relates to.
+ *
+ * @param \stdClass $grade
+ * @param \stdClass $user
+ * @return int|null
+ */
+function grade_get_date_for_user_grade(\stdClass $grade, \stdClass $user): ?int {
+    // The `datesubmitted` is the time that the grade was created.
+    // The `dategraded` is the time that it was modified or overwritten.
+    // If the grade was last modified by the user themselves use the date graded.
+    // Otherwise use date submitted.
+    if ($grade->usermodified == $user->id || empty($grade->datesubmitted)) {
+        return $grade->dategraded;
+    } else {
+        return $grade->datesubmitted;
+    }
 }

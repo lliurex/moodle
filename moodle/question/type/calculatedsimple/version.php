@@ -26,12 +26,12 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'qtype_calculatedsimple';
-$plugin->version   = 2018120300;
+$plugin->version   = 2020061500;
 
-$plugin->requires  = 2018112800;
+$plugin->requires  = 2020060900;
 $plugin->dependencies = array(
-    'qtype_numerical'  => 2018112800,
-    'qtype_calculated' => 2018112800,
+    'qtype_numerical'  => 2020060900,
+    'qtype_calculated' => 2020060900,
 );
 
 $plugin->maturity  = MATURITY_STABLE;

@@ -25,7 +25,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge 1 |
       | Description | Course badge 1 description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"
@@ -43,7 +42,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge 2 |
       | Description | Course badge 2 description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     # Set "course badge 1" as criteria
@@ -69,6 +67,31 @@ Feature: Award badges
     When I click on "Course 1" "link" in the "region-main" "region"
     Then I should see "Course Badge 1"
     And I should see "Course Badge 2"
+    # Student 1 should have both badges also in the Badges navigation section.
+    When I follow "Badges"
+    Then I should see "Course Badge 1"
+    And I should see "Course Badge 2"
+    And I should not see "Manage badges"
+    And I should not see "Add a new badge"
+    And I log out
+    # Teacher 1 should have access to manage/create badges in the Badges navigation section.
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Badges"
+    Then I should see "Course Badge 1"
+    And I should see "Course Badge 2"
+    And I should see "Manage badges"
+    And I should see "Add a new badge"
+    # Teacher 1 should NOT have access to manage/create site badges in the Site badges section.
+    When I am on homepage
+    And I press "Customise this page"
+   # TODO MDL-57120 site "Badges" link not accessible without navigation block.
+    And I add the "Navigation" block if not present
+    And I click on "Site pages" "list_item" in the "Navigation" "block"
+    And I click on "Site badges" "link" in the "Navigation" "block"
+    Then I should see "There are no badges available."
+    And I should not see "Manage badges"
+    And I should not see "Add a new badge"
 
   @javascript
   Scenario: Award profile badge
@@ -77,8 +100,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Profile Badge |
       | Description | Test badge description |
-      | issuername | Test Badge Site |
-      | issuercontact | testuser@example.com |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Profile completion"
@@ -115,7 +136,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Site Badge |
       | Description | Site badge description |
-      | issuername | Tester of site badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"
@@ -158,7 +178,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"
@@ -210,7 +229,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Activity completion"
@@ -265,7 +283,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Course completion"
@@ -315,7 +332,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge 1 |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"
@@ -341,7 +357,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge 2 |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"
@@ -398,7 +413,6 @@ Feature: Award badges
     And I set the following fields to these values:
       | Name | Course Badge |
       | Description | Course badge description |
-      | issuername | Tester of course badge |
     And I upload "badges/tests/behat/badge.png" file to "Image" filemanager
     And I press "Create badge"
     And I set the field "type" to "Manual issue by role"

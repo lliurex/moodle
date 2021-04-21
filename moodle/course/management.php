@@ -68,7 +68,11 @@ if ($courseid) {
 } else {
     $course = null;
     $courseid = null;
-    $category = core_course_category::get_default();
+    $topchildren = core_course_category::top()->get_children();
+    if (empty($topchildren)) {
+        throw new moodle_exception('cannotviewcategory', 'error');
+    }
+    $category = reset($topchildren);
     $categoryid = $category->id;
     $context = context_coursecat::instance($category->id);
     $url->param('categoryid', $category->id);
@@ -103,6 +107,7 @@ $PAGE->set_url($url);
 $PAGE->set_pagelayout('admin');
 $PAGE->set_title($strmanagement);
 $PAGE->set_heading($pageheading);
+$PAGE->requires->js_call_amd('core_course/copy_modal', 'init', array($context->id));
 
 // This is a system level page that operates on other contexts.
 require_login();
@@ -312,7 +317,8 @@ if ($action !== false && confirm_sesskey()) {
                         $notificationsfail[] = get_string('movecategoryownparent', 'error', $cattomove->get_formatted_name());
                         continue;
                     }
-                    if (strpos($movetocat->path, $cattomove->path) === 0) {
+                    // Don't allow user to move selected category into one of it's own sub-categories.
+                    if (strpos($movetocat->path, $cattomove->path . '/') === 0) {
                         $notificationsfail[] = get_string('movecategoryparentconflict', 'error', $cattomove->get_formatted_name());
                         continue;
                     }
@@ -378,9 +384,9 @@ if ($action !== false && confirm_sesskey()) {
                     }
                     $categories = core_course_category::get_many($categoryids);
                 } else if ($for === 'allcategories') {
-                    if ($sortcategoriesby && core_course_category::get(0)->can_resort_subcategories()) {
+                    if ($sortcategoriesby && core_course_category::top()->can_resort_subcategories()) {
                         \core_course\management\helper::action_category_resort_subcategories(
-                            core_course_category::get(0), $sortcategoriesby);
+                            core_course_category::top(), $sortcategoriesby);
                     }
                     $categorieslist = core_course_category::make_categories_list('moodle/category:manage');
                     $categoryids = array_keys($categorieslist);

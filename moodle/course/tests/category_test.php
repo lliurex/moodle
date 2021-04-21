@@ -418,14 +418,37 @@ class core_course_category_testcase extends advanced_testcase {
         // Dont assume there is just one. An add-on might create a category as part of the install.
         $numcategories = $DB->count_records('course_categories');
         $this->assertEquals($numcategories, core_course_category::count_all());
+        $this->assertDebuggingCalled('Method core_course_category::count_all() is deprecated. Please use ' .
+            'core_course_category::is_simple_site()', DEBUG_DEVELOPER);
         $category1 = core_course_category::create(array('name' => 'Cat1'));
         $category2 = core_course_category::create(array('name' => 'Cat2', 'parent' => $category1->id));
         $category3 = core_course_category::create(array('name' => 'Cat3', 'parent' => $category2->id, 'visible' => 0));
         // Now we've got three more.
         $this->assertEquals($numcategories + 3, core_course_category::count_all());
+        $this->assertDebuggingCalled('Method core_course_category::count_all() is deprecated. Please use ' .
+            'core_course_category::is_simple_site()', DEBUG_DEVELOPER);
         cache_helper::purge_by_event('changesincoursecat');
         // We should still have 4.
         $this->assertEquals($numcategories + 3, core_course_category::count_all());
+        $this->assertDebuggingCalled('Method core_course_category::count_all() is deprecated. Please use ' .
+            'core_course_category::is_simple_site()', DEBUG_DEVELOPER);
+    }
+
+    /**
+     * Test the is_simple_site function
+     */
+    public function test_is_simple_site() {
+        // By default site has one category and is considered simple.
+        $this->assertEquals(true, core_course_category::is_simple_site());
+        $default = core_course_category::get_default();
+        // When there is only one category but it is hidden, it is not a simple site.
+        $default->update(['visible' => 0]);
+        $this->assertEquals(false, core_course_category::is_simple_site());
+        $default->update(['visible' => 1]);
+        $this->assertEquals(true, core_course_category::is_simple_site());
+        // As soon as there is more than one category, site is not simple any more.
+        core_course_category::create(array('name' => 'Cat1'));
+        $this->assertEquals(false, core_course_category::is_simple_site());
     }
 
     /**
@@ -1007,7 +1030,7 @@ class core_course_category_testcase extends advanced_testcase {
 
         // Expecting to get an exception as this new user does not have the moodle/category:viewhiddencategories capability.
         $this->expectException('moodle_exception');
-        $this->expectExceptionMessage('unknowncategory');
+        $this->expectExceptionMessage(get_string('cannotviewcategory', 'error'));
         core_course_category::get($category2->id);
     }
 
@@ -1033,7 +1056,7 @@ class core_course_category_testcase extends advanced_testcase {
 
         $this->assertEquals($category1->id, core_course_category::get($category1->id, MUST_EXIST, false, $user2)->id);
         $this->expectException('moodle_exception');
-        $this->expectExceptionMessage('unknowncategory');
+        $this->expectExceptionMessage(get_string('cannotviewcategory', 'error'));
         core_course_category::get($category2->id, MUST_EXIST, false, $user2);
     }
 
@@ -1056,5 +1079,27 @@ class core_course_category_testcase extends advanced_testcase {
             $fs->create_file_from_string($filerecord, $filecontents);
         }
         return $draftid;
+    }
+
+    /**
+     * This test ensures that is the list of courses in a category can be retrieved while a course is being deleted.
+     */
+    public function test_get_courses_during_delete() {
+        global $DB;
+        $category = self::getDataGenerator()->create_category();
+        $course = self::getDataGenerator()->create_course(['category' => $category->id]);
+        $othercourse = self::getDataGenerator()->create_course(['category' => $category->id]);
+        $coursecategory = core_course_category::get($category->id);
+        // Get a list of courses before deletion to populate the cache.
+        $originalcourses = $coursecategory->get_courses();
+        $this->assertCount(2, $originalcourses);
+        $this->assertArrayHasKey($course->id, $originalcourses);
+        $this->assertArrayHasKey($othercourse->id, $originalcourses);
+        // Simulate the course deletion process being part way though.
+        $DB->delete_records('course', ['id' => $course->id]);
+        // Get the list of courses while a deletion is in progress.
+        $courses = $coursecategory->get_courses();
+        $this->assertCount(1, $courses);
+        $this->assertArrayHasKey($othercourse->id, $courses);
     }
 }

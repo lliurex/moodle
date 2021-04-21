@@ -139,7 +139,7 @@ class behat_mod_feedback extends behat_base {
                 return $behatgeneralcontext->download_file_from_link($link);
             },
             array('link' => $link),
-            self::EXTENDED_TIMEOUT,
+            behat_base::get_extended_timeout(),
             $exception
         );
 
@@ -165,9 +165,7 @@ class behat_mod_feedback extends behat_base {
         // If chart data is not visible then expand.
         $node = $this->get_selected_node("xpath_element", $charttabledataxpath);
         if ($node) {
-            if (!$node->isVisible()) {
-                // Focus on node, before checking if it's visible.
-                $node->focus();
+            if ($node->getAttribute('aria-expanded') === 'false') {
                 $this->execute('behat_general::i_click_on_in_the', array(
                     get_string('showchartdata'),
                     'link',

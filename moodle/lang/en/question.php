@@ -70,6 +70,9 @@ $string['categoryinfo'] = 'Category info';
 $string['categorymove'] = 'The category \'{$a->name}\' contains {$a->count} questions (some of which may be hidden questions or random questions that are still in use in a quiz). Please choose another category to move them to.';
 $string['categorymoveto'] = 'Save in category';
 $string['categorynamecantbeblank'] = 'The category name cannot be blank.';
+$string['categorynamewithcount'] = '{$a->name} ({$a->questioncount})';
+$string['categorynamewithidnumber'] = '{$a->name} [{$a->idnumber}]';
+$string['categorynamewithidnumberandcount'] = '{$a->name} [{$a->idnumber}] ({$a->questioncount})';
 $string['clickflag'] = 'Flag question';
 $string['clicktoflag'] = 'Flag this question for future reference';
 $string['clicktounflag'] = 'Remove flag';
@@ -121,7 +124,7 @@ $string['editingcategory'] = 'Editing a category';
 $string['editingquestion'] = 'Editing a question';
 $string['editquestion'] = 'Edit question';
 $string['editthiscategory'] = 'Edit this category';
-$string['emptyxml'] = 'Unkown error - empty imsmanifest.xml';
+$string['emptyxml'] = 'Unknown error - empty imsmanifest.xml';
 $string['enabled'] = 'Enabled';
 $string['erroraccessingcontext'] = 'Cannot access context';
 $string['errordeletingquestionsfromcategory'] = 'Error deleting questions from category {$a}.';
@@ -142,7 +145,19 @@ $string['errorprocessingresponses'] = 'An error occurred while processing your r
 $string['errorsavingcomment'] = 'Error saving the comment for question {$a->name} in the database.';
 $string['errorupdatingattempt'] = 'Error updating attempt {$a->id} in the database.';
 $string['eventquestioncategorycreated'] = 'Question category created';
+$string['eventquestioncategorydeleted'] = 'Question category deleted';
+$string['eventquestioncategorymoved'] = 'Question category moved';
+$string['eventquestioncategoryupdated'] = 'Question category updated';
+$string['eventquestioncategoryviewed'] = 'Question category viewed';
+$string['eventquestioncreated'] = 'Question created';
+$string['eventquestiondeleted'] = 'Question deleted';
+$string['eventquestionmoved'] = 'Question moved';
+$string['eventquestionviewed'] = 'Question viewed';
+$string['eventquestionsexported'] = 'Questions exported';
+$string['eventquestionsimported'] = 'Questions imported';
+$string['eventquestionupdated'] = 'Question updated';
 $string['export'] = 'Export';
+$string['exportasxml'] = 'Export as Moodle XML';
 $string['exportcategory'] = 'Export category';
 $string['exportcategory_help'] = 'This setting determines the category from which the exported questions will be taken.
 
@@ -168,7 +183,7 @@ $string['formquestionnotinids'] = 'Form contained question that is not in questi
 $string['fractionsnomax'] = 'One of the answers should have a score of 100% so it is possible to get full marks for this question.';
 $string['getcategoryfromfile'] = 'Get category from file';
 $string['getcontextfromfile'] = 'Get context from file';
-$string['changepublishstatuscat'] = '<a href="{$a->caturl}">Category "{$a->name}"</a> in course "{$a->coursename}" will have it\'s sharing status changed from <strong>{$a->changefrom} to {$a->changeto}</strong>.';
+$string['changepublishstatuscat'] = '<a href="{$a->caturl}">Category "{$a->name}"</a> in course "{$a->coursename}" will have its sharing status changed from {$a->changefrom} to {$a->changeto}.';
 $string['chooseqtypetoadd'] = 'Choose a question type to add';
 $string['editquestions'] = 'Edit questions';
 $string['idnumber'] = 'ID number';
@@ -272,7 +287,7 @@ $string['questiondoesnotexist'] = 'This question does not exist';
 $string['questionname'] = 'Question name';
 $string['questionno'] = 'Question {$a}';
 $string['questionsaveerror'] = 'Errors occur during saving question - ({$a})';
-$string['questionsinuse'] = '(* Questions marked by an asterisk are already in use in some quizzes. These questions will not be deleted from these quizzes but only from the category list.)';
+$string['questionsinuse'] = '(* Questions marked with an asterisk are used somewhere, for example in a quiz. Therefore, if you proceed, these questions will not really be deleted, they will just be hidden.)';
 $string['questionsmovedto'] = 'Questions still in use moved to "{$a}" in the parent course category.';
 $string['questionsrescuedfrom'] = 'Questions saved from context {$a}.';
 $string['questionsrescuedfrominfo'] = 'These questions (some of which may be hidden) were saved when context {$a} was deleted because they are still used by some quizzes or other activities.';
@@ -387,7 +402,9 @@ $string['partiallycorrectfeedbackdefault'] = 'Your answer is partially correct.'
 $string['penaltyforeachincorrecttry'] = 'Penalty for each incorrect try';
 $string['penaltyforeachincorrecttry_help'] = 'When questions are run using the \'Interactive with multiple tries\' or \'Adaptive mode\' behaviour, so that the student will have several tries to get the question right, then this option controls how much they are penalised for each incorrect try.
 
-The penalty is a proportion of the total question grade, so if the question is worth three marks, and the penalty is 0.3333333, then the student will score 3 if they get the question right first time, 2 if they get it right second try, and 1 of they get it right on the third try.';
+The penalty is a proportion of the total question grade, so if the question is worth three marks, and the penalty is 0.3333333, then the student will score 3 if they get the question right first time, 2 if they get it right second try, and 1 of they get it right on the third try.
+
+For some multi-part questions this scoring logic is applied separately to each part of the question. The details depend on the question type and can be complicated, but the principle is to give students credit for the knowledge they have demonstrated as fairly as possible.';
 $string['previewquestion'] = 'Preview question: {$a}';
 $string['privacy:metadata:database:question'] = 'The details about a specific question.';
 $string['privacy:metadata:database:question:createdby'] = 'The person who created the question.';
@@ -414,9 +431,9 @@ $string['privacy:metadata:link:qformat'] = 'The Question subsystem makes use of 
 $string['privacy:metadata:link:qtype'] = 'The Question subsystem interacts with the Question Type plugintype which contains the different types of questions.';
 $string['questionbehaviouradminsetting'] = 'Question behaviour settings';
 $string['questionbehavioursdisabled'] = 'Question behaviours to disable';
-$string['questionbehavioursdisabledexplained'] = 'Enter a comma separated list of behaviours you do not want to appear in dropdown menu';
+$string['questionbehavioursdisabledexplained'] = 'Enter a comma-separated list of behaviours you do not want to appear in the drop-down menu.';
 $string['questionbehavioursorder'] = 'Question behaviours order';
-$string['questionbehavioursorderexplained'] = 'Enter a comma separated list of behaviours in the order you want them to appear in dropdown menu';
+$string['questionbehavioursorderexplained'] = 'Enter a comma-separated list of behaviours in the order you want them to appear in the drop-down menu.';
 $string['questionidmismatch'] = 'Question ids mismatch';
 $string['questionformtagheader'] = '{$a} tags';
 $string['questionname'] = 'Question name';

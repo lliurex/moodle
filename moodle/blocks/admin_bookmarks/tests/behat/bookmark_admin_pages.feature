@@ -6,7 +6,7 @@ Feature: Add a bookmarks to an admin pages
 
   Background:
     Given I log in as "admin"
-    And I navigate to "Server > Scheduled tasks" in site administration
+    And I navigate to "Server > Tasks > Scheduled tasks" in site administration
     And I click on "Bookmark this page" "link" in the "Admin bookmarks" "block"
     And I log out
 
@@ -24,7 +24,7 @@ Feature: Add a bookmarks to an admin pages
     And I navigate to "Notifications" in site administration
     And I click on "Scheduled tasks" "link" in the "Admin bookmarks" "block"
     # Verify that we are on the right page.
-    Then I should see "Scheduled tasks" in the "h1" "css_element"
+    Then I should see "Day of week" in the "admintable" "table"
 
   Scenario: Admin page can be removed from bookmarks
     Given I log in as "admin"

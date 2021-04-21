@@ -773,7 +773,9 @@ class moodle_url {
      * @param string $pathname
      * @param string $filename
      * @param bool $forcedownload
-     * @param boolean $includetoken Whether to use a user token when displaying this group image.
+     * @param mixed $includetoken Whether to use a user token when displaying this group image.
+     *                True indicates to generate a token for current user, and integer value indicates to generate a token for the
+     *                user whose id is the value indicated.
      *                If the group picture is included in an e-mail or some other location where the audience is a specific
      *                user who will not be logged in when viewing, then we use a token to authenticate the user.
      * @return moodle_url
@@ -786,7 +788,8 @@ class moodle_url {
 
         if ($includetoken) {
             $urlbase = "$CFG->wwwroot/tokenpluginfile.php";
-            $token = get_user_key('core_files', $USER->id);
+            $userid = $includetoken === true ? $USER->id : $includetoken;
+            $token = get_user_key('core_files', $userid);
             if ($CFG->slasharguments) {
                 $path[] = $token;
             }
@@ -1104,13 +1107,10 @@ function page_get_doc_link_path(moodle_page $page) {
  * @return boolean
  */
 function validate_email($address) {
+    global $CFG;
+    require_once($CFG->libdir.'/phpmailer/moodle_phpmailer.php');
 
-    return (bool)preg_match('#^[-!\#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+'.
-                 '(\.[-!\#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+)*'.
-                  '@'.
-                  '[-!\#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+\.'.
-                  '[-!\#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$#',
-                  $address);
+    return moodle_phpmailer::validateAddress($address) && !preg_match('/[<>]/', $address);
 }
 
 /**
@@ -1856,7 +1856,7 @@ function purify_html($text, $options = array()) {
         }
 
         if ($def = $config->maybeGetRawHTMLDefinition()) {
-            $def->addElement('nolink', 'Block', 'Flow', array());                       // Skip our filters inside.
+            $def->addElement('nolink', 'Inline', 'Flow', array());                      // Skip our filters inside.
             $def->addElement('tex', 'Inline', 'Inline', array());                       // Tex syntax, equivalent to $$xx$$.
             $def->addElement('algebra', 'Inline', 'Inline', array());                   // Algebra syntax, equivalent to @@xx@@.
             $def->addElement('lang', 'Block', 'Flow', array(), array('lang'=>'CDATA')); // Original multilang style - only our hacked lang attribute.
@@ -2281,7 +2281,8 @@ function send_headers($contenttype, $cacheable = true) {
     }
     @header('Accept-Ranges: none');
 
-    if (empty($CFG->allowframembedding)) {
+    // The Moodle app must be allowed to embed content always.
+    if (empty($CFG->allowframembedding) && !core_useragent::is_moodle_app()) {
         @header('X-Frame-Options: sameorigin');
     }
 }
@@ -2435,9 +2436,11 @@ function print_collapsible_region($contents, $classes, $id, $caption, $userpref 
  *      (May be blank if you do not wish the state to be persisted.
  * @param boolean $default Initial collapsed state to use if the user_preference it not set.
  * @param boolean $return if true, return the HTML as a string, rather than printing it.
+ * @param string $extracontent the extra content will show next to caption, eg.Help icon.
  * @return string|void if $return is false, returns nothing, otherwise returns a string of HTML.
  */
-function print_collapsible_region_start($classes, $id, $caption, $userpref = '', $default = false, $return = false) {
+function print_collapsible_region_start($classes, $id, $caption, $userpref = '', $default = false, $return = false,
+        $extracontent = null) {
     global $PAGE;
 
     // Work out the initial state.
@@ -2457,8 +2460,11 @@ function print_collapsible_region_start($classes, $id, $caption, $userpref = '',
     $output .= '<div id="' . $id . '" class="collapsibleregion ' . $classes . '">';
     $output .= '<div id="' . $id . '_sizer">';
     $output .= '<div id="' . $id . '_caption" class="collapsibleregioncaption">';
-    $output .= $caption . ' ';
-    $output .= '</div><div id="' . $id . '_inner" class="collapsibleregioninner">';
+    $output .= $caption . ' </div>';
+    if ($extracontent) {
+        $output .= html_writer::div($extracontent, 'collapsibleregionextracontent');
+    }
+    $output .= '<div id="' . $id . '_inner" class="collapsibleregioninner">';
     $PAGE->requires->js_init_call('M.util.init_collapsible_region', array($id, $userpref, get_string('clicktohideshow')));
 
     if ($return) {
@@ -2493,6 +2499,8 @@ function print_collapsible_region_end($return = false) {
  * @param boolean $return If false print picture, otherwise return the output as string
  * @param boolean $link Enclose image in a link to view specified course?
  * @param boolean $includetoken Whether to use a user token when displaying this group image.
+ *                True indicates to generate a token for current user, and integer value indicates to generate a token for the
+ *                user whose id is the value indicated.
  *                If the group picture is included in an e-mail or some other location where the audience is a specific
  *                user who will not be logged in when viewing, then we use a token to authenticate the user.
  * @return string|void Depending on the setting of $return
@@ -2547,6 +2555,8 @@ function print_group_picture($group, $courseid, $large = false, $return = false,
  * @param  int $courseid The course ID for the group.
  * @param  bool $large A large or small group picture? Default is small.
  * @param  boolean $includetoken Whether to use a user token when displaying this group image.
+ *                 True indicates to generate a token for current user, and integer value indicates to generate a token for the
+ *                 user whose id is the value indicated.
  *                 If the group picture is included in an e-mail or some other location where the audience is a specific
  *                 user who will not be logged in when viewing, then we use a token to authenticate the user.
  * @return moodle_url Returns the url for the group picture.
@@ -2944,6 +2954,9 @@ function redirect($url, $message='', $delay=null, $messagetype = \core\output\no
     \core\session\manager::write_close();
 
     if ($delay == 0 && !$debugdisableredirect && !headers_sent()) {
+        // This helps when debugging redirect issues like loops and it is not clear
+        // which layer in the stack sent the redirect header.
+        @header('X-Redirect-By: Moodle');
         // 302 might not work for POST requests, 303 is ignored by obsolete clients.
         @header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
         @header('Location: '.$url);
@@ -2973,10 +2986,10 @@ function obfuscate_email($email) {
     $length = strlen($email);
     $obfuscated = '';
     while ($i < $length) {
-        if (rand(0, 2) && $email{$i}!='@') { // MDL-20619 some browsers have problems unobfuscating @.
-            $obfuscated.='%'.dechex(ord($email{$i}));
+        if (rand(0, 2) && $email[$i]!='@') { // MDL-20619 some browsers have problems unobfuscating @.
+            $obfuscated.='%'.dechex(ord($email[$i]));
         } else {
-            $obfuscated.=$email{$i};
+            $obfuscated.=$email[$i];
         }
         $i++;
     }
@@ -3610,7 +3623,9 @@ function print_password_policy() {
     $message = '';
     if (!empty($CFG->passwordpolicy)) {
         $messages = array();
-        $messages[] = get_string('informminpasswordlength', 'auth', $CFG->minpasswordlength);
+        if (!empty($CFG->minpasswordlength)) {
+            $messages[] = get_string('informminpasswordlength', 'auth', $CFG->minpasswordlength);
+        }
         if (!empty($CFG->minpassworddigits)) {
             $messages[] = get_string('informminpassworddigits', 'auth', $CFG->minpassworddigits);
         }
@@ -3624,8 +3639,20 @@ function print_password_policy() {
             $messages[] = get_string('informminpasswordnonalphanum', 'auth', $CFG->minpasswordnonalphanum);
         }
 
+        // Fire any additional password policy functions from plugins.
+        // Callbacks must return an array of message strings.
+        $pluginsfunction = get_plugins_with_function('print_password_policy');
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $messages = array_merge($messages, $pluginfunction());
+            }
+        }
+
         $messages = join(', ', $messages); // This is ugly but we do not have anything better yet...
-        $message = get_string('informpasswordpolicy', 'auth', $messages);
+        // Check if messages is empty before outputting any text.
+        if ($messages != '') {
+            $message = get_string('informpasswordpolicy', 'auth', $messages);
+        }
     }
     return $message;
 }

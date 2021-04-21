@@ -462,7 +462,7 @@ class core_group_external extends external_api {
             $groupid = $member['groupid'];
             $userid = $member['userid'];
 
-            $group = groups_get_group($groupid, 'id, courseid', MUST_EXIST);
+            $group = groups_get_group($groupid, '*', MUST_EXIST);
             $user = $DB->get_record('user', array('id'=>$userid, 'deleted'=>0, 'mnethostid'=>$CFG->mnet_localhost_id), '*', MUST_EXIST);
 
             // now security checks
@@ -540,7 +540,7 @@ class core_group_external extends external_api {
             $groupid = $member['groupid'];
             $userid = $member['userid'];
 
-            $group = groups_get_group($groupid, 'id, courseid', MUST_EXIST);
+            $group = groups_get_group($groupid, '*', MUST_EXIST);
             $user = $DB->get_record('user', array('id'=>$userid, 'deleted'=>0, 'mnethostid'=>$CFG->mnet_localhost_id), '*', MUST_EXIST);
 
             // now security checks
@@ -556,7 +556,8 @@ class core_group_external extends external_api {
             require_capability('moodle/course:managegroups', $context);
 
             if (!groups_remove_member_allowed($group, $user)) {
-                throw new moodle_exception('errorremovenotpermitted', 'group', '', fullname($user));
+                $fullname = fullname($user, has_capability('moodle/site:viewfullnames', $context));
+                throw new moodle_exception('errorremovenotpermitted', 'group', '', $fullname);
             }
             groups_remove_member($group, $user);
         }
@@ -986,7 +987,7 @@ class core_group_external extends external_api {
 
         foreach ($params['groupingids'] as $groupingid) {
 
-            if (!$grouping = groups_get_grouping($groupingid, 'id, courseid', IGNORE_MISSING)) {
+            if (!$grouping = groups_get_grouping($groupingid)) {
                 // Silently ignore attempts to delete nonexisting groupings.
                 continue;
             }

@@ -108,17 +108,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
 
     public function js_call() {
         global $PAGE;
-
-        $maxbgimagesize = [
-                'width' => QTYPE_DDIMAGEORTEXT_BGIMAGE_MAXWIDTH,
-                'height' => QTYPE_DDIMAGEORTEXT_BGIMAGE_MAXHEIGHT
-        ];
-        $maxdragimagesize = [
-                'width' => QTYPE_DDIMAGEORTEXT_DRAGIMAGE_MAXWIDTH,
-                'height' => QTYPE_DDIMAGEORTEXT_DRAGIMAGE_MAXHEIGHT
-        ];
-        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init',
-                [$maxbgimagesize, $maxdragimagesize]);
+        $PAGE->requires->js_call_amd('qtype_ddimageortext/form', 'init');
     }
 
     // Drag items.
@@ -126,8 +116,7 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
     protected function definition_draggable_items($mform, $itemrepeatsatstart) {
         $mform->addElement('header', 'draggableitemheader',
                                 get_string('draggableitems', 'qtype_ddimageortext'));
-        $mform->addElement('advcheckbox', 'shuffleanswers', ' ',
-                                get_string('shuffleimages', 'qtype_'.$this->qtype()));
+        $mform->addElement('advcheckbox', 'shuffleanswers', get_string('shuffleimages', 'qtype_'.$this->qtype()));
         $mform->setDefault('shuffleanswers', 0);
         $this->repeat_elements($this->draggable_item($mform), $itemrepeatsatstart,
                 $this->draggable_items_repeated_options(),
@@ -147,14 +136,13 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
                                             array('class' => 'dragitemtype'));
         $options = array();
         for ($i = 1; $i <= self::MAX_GROUPS; $i += 1) {
-            $options[$i] = $i;
+            $options[$i] = question_utils::int_to_letter($i);
         }
         $grouparray[] = $mform->createElement('select', 'draggroup',
                                                 get_string('group', 'qtype_gapselect'),
                                                 $options,
                                                 array('class' => 'draggroup'));
-        $grouparray[] = $mform->createElement('advcheckbox', 'infinite', ' ',
-                get_string('infinite', 'qtype_ddimageortext'));
+        $grouparray[] = $mform->createElement('advcheckbox', 'infinite', get_string('infinite', 'qtype_ddimageortext'));
         $draggableimageitem[] = $mform->createElement('group', 'drags',
                 get_string('draggableitemheader', 'qtype_ddimageortext', '{no}'), $grouparray);
 
@@ -267,8 +255,8 @@ class qtype_ddimageortext_edit_form extends qtype_ddtoimage_edit_form_base {
         for ($dragindex = 0; $dragindex < $data['noitems']; $dragindex++) {
             $label = $data['draglabel'][$dragindex];
             if ($data['drags'][$dragindex]['dragitemtype'] == 'word') {
-                $allowedtags = '<br><sub><sup><b><i><strong><em>';
-                $errormessage = get_string('formerror_disallowedtags', 'qtype_ddimageortext');
+                $allowedtags = '<br><sub><sup><b><i><strong><em><span>';
+                $errormessage = get_string('formerror_disallowedtags', 'qtype_ddimageortext', s($allowedtags));
             } else {
                 $allowedtags = '';
                 $errormessage = get_string('formerror_noallowedtags', 'qtype_ddimageortext');

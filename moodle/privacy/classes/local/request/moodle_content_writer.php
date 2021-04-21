@@ -38,6 +38,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class moodle_content_writer implements content_writer {
     /**
+     * Maximum context name char size.
+     */
+    const MAX_CONTEXT_NAME_LENGTH = 32;
+
+    /**
      * @var string The base path on disk for this instance.
      */
     protected $path = null;
@@ -134,11 +139,8 @@ class moodle_content_writer implements content_writer {
      * @return  content_writer
      */
     public function export_related_data(array $subcontext, $name, $data) : content_writer {
-        $path = $this->get_path($subcontext, "{$name}.json");
-
-        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-
-        return $this;
+        return $this->export_custom_file($subcontext, "{$name}.json",
+            json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
     /**
@@ -254,15 +256,17 @@ class moodle_content_writer implements content_writer {
     /**
      * Determine the path for the current context.
      *
-     * @return  array                       The context path.
+     * @return array The context path.
+     * @throws \coding_exception
      */
-    protected function get_context_path() : Array {
+    protected function get_context_path() : array {
         $path = [];
         $contexts = array_reverse($this->context->get_parent_contexts(true));
         foreach ($contexts as $context) {
             $name = $context->get_context_name();
-            $id = '_.' . $context->id;
-            $path[] = shorten_filename(clean_param("{$name} {$id}", PARAM_FILE), MAX_FILENAME_SIZE, true);
+            $id = ' _.' . $context->id;
+            $path[] = shorten_text(clean_param($name, PARAM_FILE),
+                    self::MAX_CONTEXT_NAME_LENGTH, true, json_decode('"' . '\u2026' . '"')) . $id;
         }
 
         return $path;
@@ -290,11 +294,18 @@ class moodle_content_writer implements content_writer {
                     }
                     return $value;
                 }, $newpath);
-                return implode(DIRECTORY_SEPARATOR, $newpath);
+                $data = implode(DIRECTORY_SEPARATOR, $newpath);
             } else if (is_numeric($data)) {
                 $data = '_' . $data;
             }
-            return $data;
+            // Because clean_param() normalises separators to forward-slashes
+            // and because there is code DIRECTORY_SEPARATOR dependent after
+            // this array_map(), we ensure we get the original separator.
+            // Note that maybe we could leave the clean_param() alone, but
+            // surely that means that the DIRECTORY_SEPARATOR dependent
+            // code is not needed at all. So better keep existing behavior
+            // until this is revisited.
+            return str_replace('/', DIRECTORY_SEPARATOR, clean_param($data, PARAM_PATH));
         }, $subcontext);
 
         // Combine the context path, and the subcontext data.
@@ -616,8 +627,8 @@ class moodle_content_writer implements content_writer {
         $targetpath = ['js', 'general.js'];
         $this->copy_data($jspath, $targetpath);
 
-        $jquery = ['lib', 'jquery', 'jquery-3.2.1.min.js'];
-        $jquerydestination = ['js', 'jquery-3.2.1.min.js'];
+        $jquery = ['lib', 'jquery', 'jquery-3.5.1.min.js'];
+        $jquerydestination = ['js', 'jquery-3.5.1.min.js'];
         $this->copy_data($jquery, $jquerydestination);
 
         $requirecurrentpath = ['lib', 'requirejs', 'require.min.js'];
@@ -658,7 +669,7 @@ class moodle_content_writer implements content_writer {
         $navigationpage = new \core_privacy\output\exported_navigation_page(current($richtree));
         $navigationhtml = $output->render_navigation($navigationpage);
 
-        $systemname = $SITE->fullname;
+        $systemname = format_string($SITE->fullname, true, ['context' => \context_system::instance()]);
         $fullusername = fullname($USER);
         $siteurl = $CFG->wwwroot;
 

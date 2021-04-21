@@ -27,10 +27,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component  = 'workshopallocation_scheduled';
-$plugin->version    = 2018120300;
-$plugin->requires   = 2018112800;
+$plugin->version    = 2020061500;
+$plugin->requires   = 2020060900;
 $plugin->dependencies = array(
-    'workshopallocation_random'  => 2018112800,
+    'workshopallocation_random'  => 2020060900,
 );
 $plugin->maturity   = MATURITY_STABLE;
-$plugin->cron       = 60;

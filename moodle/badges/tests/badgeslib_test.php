@@ -30,6 +30,8 @@ global $CFG;
 require_once($CFG->libdir . '/badgeslib.php');
 require_once($CFG->dirroot . '/badges/lib.php');
 
+use core_badges\helper;
+
 class core_badges_badgeslib_testcase extends advanced_testcase {
     protected $badgeid;
     protected $course;
@@ -75,6 +77,10 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
 
         $this->badgeid = $DB->insert_record('badge', $fordb, true);
 
+        // Set the default Issuer (because OBv2 needs them).
+        set_config('badges_defaultissuername', $fordb->issuername);
+        set_config('badges_defaultissuercontact', $fordb->issuercontact);
+
         // Create a course with activity and auto completion tracking.
         $this->course = $this->getDataGenerator()->create_course(array('enablecompletion' => true));
         $this->user = $this->getDataGenerator()->create_user();
@@ -119,15 +125,15 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
         $relatebadge->relatedbadgeid = $clonedid;
         $relatebadge->relatedid = $DB->insert_record('badge_related', $relatebadge, true);
 
-        // Insert a competency aligment.
-        $competency = new stdClass();
-        $competency->badgeid = $this->coursebadge;
-        $competency->targetname = 'CCSS.ELA-Literacy.RST.11-12.3';
-        $competency->targeturl = 'http://www.corestandards.org/ELA-Literacy/RST/11-12/3';
-        $competency->targetdescription = 'Test target description';
-        $competency->targetframework = 'CCSS.RST.11-12.3';
-        $competency->targetcode = 'CCSS.RST.11-12.3';
-        $DB->insert_record('badge_competencies', $competency, true);
+        // Insert a aligment.
+        $alignment = new stdClass();
+        $alignment->badgeid = $this->coursebadge;
+        $alignment->targetname = 'CCSS.ELA-Literacy.RST.11-12.3';
+        $alignment->targeturl = 'http://www.corestandards.org/ELA-Literacy/RST/11-12/3';
+        $alignment->targetdescription = 'Test target description';
+        $alignment->targetframework = 'CCSS.RST.11-12.3';
+        $alignment->targetcode = 'CCSS.RST.11-12.3';
+        $DB->insert_record('badge_alignment', $alignment, true);
 
         $this->assertion = new stdClass();
         $this->assertion->badge = '{"uid":"%s","recipient":{"identity":"%s","type":"email","hashed":true,"salt":"%s"},"badge":"%s","verify":{"type":"hosted","url":"%s"},"issuedOn":"%d","evidence":"%s"}';
@@ -136,20 +142,21 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
         // Format JSON-LD for Openbadge specification version 2.0.
         $this->assertion2 = new stdClass();
         $this->assertion2->badge = '{"recipient":{"identity":"%s","type":"email","hashed":true,"salt":"%s"},' .
-            '"badge":{"name":"%s","description":"%s","image":{"id":"%s","author":"%s","caption":"%s"},' .
+            '"badge":{"name":"%s","description":"%s","image":"%s",' .
             '"criteria":{"id":"%s","narrative":"%s"},"issuer":{"name":"%s","url":"%s","email":"%s",' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"},' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"BadgeClass","version":"%s",' .
-            '"@language":"%s","related":[{"id":"%s","version":"%s","@language":"%s"}],"endorsement":"%s",' .
-            '"alignment":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
+            '"@language":"en","related":[{"id":"%s","version":"%s","@language":"%s"}],"endorsement":"%s",' .
+            '"alignments":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
             '"targetCode":"%s"}]},"verify":{"type":"hosted","url":"%s"},"issuedOn":"%s","evidence":"%s",' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","type":"Assertion","id":"%s"}';
-        $this->assertion2->class = '{"name":"%s","description":"%s","image":{"id":"%s","author":"%s","caption":"%s"},' .
+
+        $this->assertion2->class = '{"name":"%s","description":"%s","image":"%s",' .
             '"criteria":{"id":"%s","narrative":"%s"},"issuer":{"name":"%s","url":"%s","email":"%s",' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"},' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"BadgeClass","version":"%s",' .
             '"@language":"%s","related":[{"id":"%s","version":"%s","@language":"%s"}],"endorsement":"%s",' .
-            '"alignment":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
+            '"alignments":[{"targetName":"%s","targetUrl":"%s","targetDescription":"%s","targetFramework":"%s",' .
             '"targetCode":"%s"}]}';
         $this->assertion2->issuer = '{"name":"%s","url":"%s","email":"%s",' .
             '"@context":"https:\/\/w3id.org\/openbadges\/v2","id":"%s","type":"Issuer"}';
@@ -290,12 +297,28 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
     }
 
     public function test_badge_awards() {
+        global $DB;
         $this->preventResetByRollback(); // Messaging is not compatible with transactions.
         $badge = new badge($this->badgeid);
         $user1 = $this->getDataGenerator()->create_user();
 
-        $badge->issue($user1->id, true);
+        $sink = $this->redirectMessages();
+
+        $DB->set_field_select('message_processors', 'enabled', 0, "name <> 'email'");
+        set_user_preference('message_provider_moodle_badgerecipientnotice_loggedoff', 'email', $user1);
+
+        $badge->issue($user1->id, false);
+        $this->assertDebuggingCalled(); // Expect debugging while baking a badge via phpunit.
         $this->assertTrue($badge->is_issued($user1->id));
+
+        $messages = $sink->get_messages();
+        $sink->close();
+        $this->assertCount(1, $messages);
+        $message = array_pop($messages);
+        // Check we have the expected data.
+        $customdata = json_decode($message->customdata);
+        $this->assertObjectHasAttribute('notificationiconurl', $customdata);
+        $this->assertObjectHasAttribute('hash', $customdata);
 
         $user2 = $this->getDataGenerator()->create_user();
         $badge->issue($user2->id, true);
@@ -653,7 +676,7 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
 
         // Get assertion.
         $award = reset($awards);
-        $assertion = new core_badges_assertion($award->uniquehash);
+        $assertion = new core_badges_assertion($award->uniquehash, OPEN_BADGES_V1);
         $testassertion = $this->assertion;
 
         // Make sure JSON strings have the same structure.
@@ -797,41 +820,95 @@ class core_badges_badgeslib_testcase extends advanced_testcase {
     }
 
     /**
-     * Test insert, update, delete competencies alignment with a site badge.
+     * Test insert, update, delete alignment with a site badge.
      */
-    public function test_competencies_alignment() {
+    public function test_alignments() {
         $badge = new badge($this->badgeid);
 
-        // Insert a competency alignment.
-        $competency1 = new stdClass();
-        $competency1->badgeid = $this->badgeid;
-        $competency1->targetname = 'CCSS.ELA-Literacy.RST.11-12.3';
-        $competency1->targeturl = 'http://www.corestandards.org/ELA-Literacy/RST/11-12/3';
-        $competency1->targetdescription = 'Test target description';
-        $competency1->targetframework = 'CCSS.RST.11-12.3';
-        $competency1->targetcode = 'CCSS.RST.11-12.3';
-        $competency2 = clone $competency1;
-        $newid1 = $badge->save_alignment($competency1);
-        $newid2 = $badge->save_alignment($competency2);
-        $competencies1 = $badge->get_alignment();
-        $this->assertCount(2, $competencies1);
+        // Insert a alignment.
+        $alignment1 = new stdClass();
+        $alignment1->badgeid = $this->badgeid;
+        $alignment1->targetname = 'CCSS.ELA-Literacy.RST.11-12.3';
+        $alignment1->targeturl = 'http://www.corestandards.org/ELA-Literacy/RST/11-12/3';
+        $alignment1->targetdescription = 'Test target description';
+        $alignment1->targetframework = 'CCSS.RST.11-12.3';
+        $alignment1->targetcode = 'CCSS.RST.11-12.3';
+        $alignment2 = clone $alignment1;
+        $newid1 = $badge->save_alignment($alignment1);
+        $newid2 = $badge->save_alignment($alignment2);
+        $alignments1 = $badge->get_alignments();
+        $this->assertCount(2, $alignments1);
 
-        $this->assertEquals($competency1->badgeid, $competencies1[$newid1]->badgeid);
-        $this->assertEquals($competency1->targetname, $competencies1[$newid1]->targetname);
-        $this->assertEquals($competency1->targeturl, $competencies1[$newid1]->targeturl);
-        $this->assertEquals($competency1->targetdescription, $competencies1[$newid1]->targetdescription);
-        $this->assertEquals($competency1->targetframework, $competencies1[$newid1]->targetframework);
-        $this->assertEquals($competency1->targetcode, $competencies1[$newid1]->targetcode);
+        $this->assertEquals($alignment1->badgeid, $alignments1[$newid1]->badgeid);
+        $this->assertEquals($alignment1->targetname, $alignments1[$newid1]->targetname);
+        $this->assertEquals($alignment1->targeturl, $alignments1[$newid1]->targeturl);
+        $this->assertEquals($alignment1->targetdescription, $alignments1[$newid1]->targetdescription);
+        $this->assertEquals($alignment1->targetframework, $alignments1[$newid1]->targetframework);
+        $this->assertEquals($alignment1->targetcode, $alignments1[$newid1]->targetcode);
 
-        // Update competency aligment.
-        $competencies1[$newid1]->targetname = 'CCSS.ELA-Literacy.RST.11-12.3 update';
-        $badge->save_alignment($competencies1[$newid1], $competencies1[$newid1]->id);
-        $competencies2 = $badge->get_alignment();
-        $this->assertEquals($competencies1[$newid1]->id, $competencies2[$newid1]->id);
-        $this->assertEquals($competencies1[$newid1]->targetname, $competencies2[$newid1]->targetname);
+        // Update aligment.
+        $alignments1[$newid1]->targetname = 'CCSS.ELA-Literacy.RST.11-12.3 update';
+        $badge->save_alignment($alignments1[$newid1], $alignments1[$newid1]->id);
+        $alignments2 = $badge->get_alignments();
+        $this->assertEquals($alignments1[$newid1]->id, $alignments2[$newid1]->id);
+        $this->assertEquals($alignments1[$newid1]->targetname, $alignments2[$newid1]->targetname);
 
-        // Delete competency alignment.
-        $badge->delete_alignment($competencies1[$newid2]->id);
-        $this->assertCount(1, $badge->get_alignment());
+        // Delete alignment.
+        $badge->delete_alignment($alignments1[$newid2]->id);
+        $this->assertCount(1, $badge->get_alignments());
+    }
+
+    /**
+     * Test badges_delete_site_backpack().
+     *
+     */
+    public function test_badges_delete_site_backpack(): void {
+        global $DB;
+
+        $this->setAdminUser();
+
+        // Create one backpack.
+        $total = $DB->count_records('badge_external_backpack');
+        $this->assertEquals(1, $total);
+
+        $data = new \stdClass();
+        $data->apiversion = OPEN_BADGES_V2P1;
+        $data->backpackapiurl = 'https://dc.imsglobal.org/obchost/ims/ob/v2p1';
+        $data->backpackweburl = 'https://dc.imsglobal.org';
+        badges_create_site_backpack($data);
+        $backpack = $DB->get_record('badge_external_backpack', ['backpackweburl' => $data->backpackweburl]);
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        // User1 is connected to the backpack to be removed and has 2 collections.
+        $backpackuser1 = helper::create_fake_backpack(['userid' => $user1->id, 'externalbackpackid' => $backpack->id]);
+        helper::create_fake_backpack_collection(['backpackid' => $backpackuser1->id]);
+        helper::create_fake_backpack_collection(['backpackid' => $backpackuser1->id]);
+        // User2 is connected to a different backpack and has 1 collection.
+        $backpackuser2 = helper::create_fake_backpack(['userid' => $user2->id]);
+        helper::create_fake_backpack_collection(['backpackid' => $backpackuser2->id]);
+
+        $total = $DB->count_records('badge_external_backpack');
+        $this->assertEquals(2, $total);
+        $total = $DB->count_records('badge_backpack');
+        $this->assertEquals(2, $total);
+        $total = $DB->count_records('badge_external');
+        $this->assertEquals(3, $total);
+
+        // Remove the backpack created previously.
+        $result = badges_delete_site_backpack($backpack->id);
+        $this->assertTrue($result);
+
+        $total = $DB->count_records('badge_external_backpack');
+        $this->assertEquals(1, $total);
+
+        $total = $DB->count_records('badge_backpack');
+        $this->assertEquals(1, $total);
+
+        $total = $DB->count_records('badge_external');
+        $this->assertEquals(1, $total);
+
+        // Try to remove an non-existent backpack.
+        $result = badges_delete_site_backpack($backpack->id);
+        $this->assertFalse($result);
     }
 }

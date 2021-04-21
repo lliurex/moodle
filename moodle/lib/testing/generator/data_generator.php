@@ -142,6 +142,7 @@ EOD;
      */
     public function create_user($record=null, array $options=null) {
         global $DB, $CFG;
+        require_once($CFG->dirroot.'/user/lib.php');
 
         $this->usercounter++;
         $i = $this->usercounter;
@@ -206,10 +207,6 @@ EOD;
 
         if (isset($record['password'])) {
             $record['password'] = hash_internal_user_password($record['password']);
-        } else {
-            // The auth plugin may not fully support this,
-            // but it is still better/faster than hashing random stuff.
-            $record['password'] = AUTH_PASSWORD_NOT_CACHED;
         }
 
         if (!isset($record['email'])) {
@@ -220,61 +217,41 @@ EOD;
             $record['confirmed'] = 1;
         }
 
-        if (!isset($record['lang'])) {
-            $record['lang'] = 'en';
+        if (!isset($record['lastip'])) {
+            $record['lastip'] = '0.0.0.0';
         }
 
-        if (!isset($record['maildisplay'])) {
-            $record['maildisplay'] = $CFG->defaultpreference_maildisplay;
+        $tobedeleted = !empty($record['deleted']);
+        unset($record['deleted']);
+
+        $userid = user_create_user($record, false, false);
+
+        if ($extrafields = array_intersect_key($record, ['password' => 1, 'timecreated' => 1])) {
+            $DB->update_record('user', ['id' => $userid] + $extrafields);
         }
 
-        if (!isset($record['mailformat'])) {
-            $record['mailformat'] = $CFG->defaultpreference_mailformat;
-        }
+        if (!$tobedeleted) {
+            // All new not deleted users must have a favourite self-conversation.
+            $selfconversation = \core_message\api::create_conversation(
+                \core_message\api::MESSAGE_CONVERSATION_TYPE_SELF,
+                [$userid]
+            );
+            \core_message\api::set_favourite_conversation($selfconversation->id, $userid);
 
-        if (!isset($record['maildigest'])) {
-            $record['maildigest'] = $CFG->defaultpreference_maildigest;
-        }
-
-        if (!isset($record['autosubscribe'])) {
-            $record['autosubscribe'] = $CFG->defaultpreference_autosubscribe;
-        }
-
-        if (!isset($record['trackforums'])) {
-            $record['trackforums'] = $CFG->defaultpreference_trackforums;
-        }
-
-        if (!isset($record['deleted'])) {
-            $record['deleted'] = 0;
-        }
-
-        if (!isset($record['timecreated'])) {
-            $record['timecreated'] = time();
-        }
-
-        $record['timemodified'] = $record['timecreated'];
-        $record['lastip'] = '0.0.0.0';
-
-        if ($record['deleted']) {
-            $delname = $record['email'].'.'.time();
-            while ($DB->record_exists('user', array('username'=>$delname))) {
-                $delname++;
+            // Save custom profile fields data.
+            $hasprofilefields = array_filter($record, function($key){
+                return strpos($key, 'profile_field_') === 0;
+            }, ARRAY_FILTER_USE_KEY);
+            if ($hasprofilefields) {
+                require_once($CFG->dirroot.'/user/profile/lib.php');
+                $usernew = (object)(['id' => $userid] + $record);
+                profile_save_data($usernew);
             }
-            $record['idnumber'] = '';
-            $record['email']    = md5($record['username']);
-            $record['username'] = $delname;
-            $record['picture']  = 0;
-        }
-
-        $userid = $DB->insert_record('user', $record);
-
-        if (!$record['deleted']) {
-            context_user::instance($userid);
         }
 
         $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
 
-        if (!$record['deleted'] && isset($record['interests'])) {
+        if (!$tobedeleted && isset($record['interests'])) {
             require_once($CFG->dirroot . '/user/editlib.php');
             if (!is_array($record['interests'])) {
                 $record['interests'] = preg_split('/\s*,\s*/', trim($record['interests']), -1, PREG_SPLIT_NO_EMPTY);
@@ -282,6 +259,12 @@ EOD;
             useredit_update_interests($user, $record['interests']);
         }
 
+        \core\event\user_created::create_from_userid($userid)->trigger();
+
+        if ($tobedeleted) {
+            delete_user($user);
+            $user = $DB->get_record('user', array('id' => $userid));
+        }
         return $user;
     }
 
@@ -340,7 +323,7 @@ EOD;
         }
 
         if (!isset($record['description'])) {
-            $record['description'] = "Test cohort $i\n$this->loremipsum";
+            $record['description'] = "Description for '{$record['name']}' \n$this->loremipsum";
         }
 
         if (!isset($record['descriptionformat'])) {
@@ -424,6 +407,12 @@ EOD;
             // Since Moodle 3.3 function create_course() automatically creates sections if numsections is specified.
             // For BC if 'createsections' is given but 'numsections' is not, assume the default value from config.
             $record['numsections'] = get_config('moodlecourse', 'numsections');
+        }
+
+        if (!empty($record['customfields'])) {
+            foreach ($record['customfields'] as $field) {
+                $record['customfield_'.$field['shortname']] = $field['value'];
+            }
         }
 
         $course = create_course((object)$record);
@@ -1129,7 +1118,6 @@ EOD;
         require_once($CFG->dirroot . '/calendar/lib.php');
         $record = new \stdClass();
         $record->name = 'event name';
-        $record->eventtype = 'global';
         $record->repeat = 0;
         $record->repeats = 0;
         $record->timestart = time();
@@ -1160,7 +1148,7 @@ EOD;
                 unset($record->courseid);
                 unset($record->groupid);
                 break;
-            case 'global':
+            case 'site':
                 unset($record->categoryid);
                 unset($record->courseid);
                 unset($record->groupid);
@@ -1171,6 +1159,31 @@ EOD;
         $event->create($record);
 
         return $event->properties();
+    }
+
+    /**
+     * Create a new course custom field category with the given name.
+     *
+     * @param   array $data Array with data['name'] of category
+     * @return  \core_customfield\category_controller   The created category
+     */
+    public function create_custom_field_category($data) : \core_customfield\category_controller {
+        return $this->get_plugin_generator('core_customfield')->create_category($data);
+    }
+
+    /**
+     * Create a new custom field
+     *
+     * @param   array $data Array with 'name', 'shortname' and 'type' of the field
+     * @return  \core_customfield\field_controller   The created field
+     */
+    public function create_custom_field($data) : \core_customfield\field_controller {
+        global $DB;
+        if (empty($data['categoryid']) && !empty($data['category'])) {
+            $data['categoryid'] = $DB->get_field('customfield_category', 'id', ['name' => $data['category']]);
+            unset($data['category']);
+        }
+        return $this->get_plugin_generator('core_customfield')->create_field($data);
     }
 
     /**
@@ -1191,5 +1204,27 @@ EOD;
         $this->enrol_user($user->id, $course->id, $roleid, $enrol, $timestart, $timeend, $status);
 
         return $user;
+    }
+
+    /**
+     * Create a new last access record for a given user in a course.
+     *
+     * @param   \stdClass   $user The user
+     * @param   \stdClass   $course The course the user accessed
+     * @param   int         $timestamp The timestamp for when the user last accessed the course
+     * @return  \stdClass   The user_lastaccess record
+     */
+    public function create_user_course_lastaccess(\stdClass $user, \stdClass $course, int $timestamp): \stdClass {
+        global $DB;
+
+        $record = [
+            'userid' => $user->id,
+            'courseid' => $course->id,
+            'timeaccess' => $timestamp,
+        ];
+
+        $recordid = $DB->insert_record('user_lastaccess', $record);
+
+        return $DB->get_record('user_lastaccess', ['id' => $recordid], '*', MUST_EXIST);
     }
 }

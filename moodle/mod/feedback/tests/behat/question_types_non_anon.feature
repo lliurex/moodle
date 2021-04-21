@@ -33,7 +33,7 @@ Feature: Test creating different types of feedback questions for non-anonymous f
     And I add a "Information" question to the feedback with:
       | Question         | this is a response time question |
       | Label            | curtime                          |
-      | Information type | Responsestime                    |
+      | Information type | Responses time                   |
     And I add a "Label" question to the feedback with:
       | Contents | label text |
     And I add a "Longer text answer" question to the feedback with:
@@ -48,12 +48,11 @@ Feature: Test creating different types of feedback questions for non-anonymous f
       | Question                       | this is a multiple choice 2        |
       | Label                          | multichoice2                       |
       | Multiple choice type           | Multiple choice - multiple answers |
-      | Hide the "Not selected" option | Yes                                |
       | Multiple choice values         | option d\noption e\noption f       |
     And I add a "Multiple choice" question to the feedback with:
       | Question                       | this is a multiple choice 3        |
       | Label                          | multichoice3                       |
-      | Multiple choice type           | Multiple choice - single answer allowed (dropdownlist) |
+      | Multiple choice type           | Multiple choice - single answer allowed (drop-down menu) |
       | Multiple choice values         | option g\noption h\noption i                           |
     And I add a "Multiple choice (rated)" question to the feedback with:
       | Question               | this is a multiple choice rated |

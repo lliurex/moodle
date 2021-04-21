@@ -100,9 +100,6 @@ class event_vault implements event_vault_interface {
         $ignorehidden = true,
         callable $filter = null
     ) {
-        if ($limitnum < 1 || $limitnum > 200) {
-            throw new limit_invalid_parameter_exception("Limit must be between 1 and 200 (inclusive)");
-        }
 
         $fromquery = function($field, $timefrom, $lastseenmethod, $afterevent, $withduration) {
             if (!$timefrom) {
@@ -186,7 +183,11 @@ class event_vault implements event_vault_interface {
                 }
             }
 
-            $offset += $limitnum;
+            if (!$limitnum) {
+                break;
+            } else {
+                $offset += $limitnum;
+            }
         }
 
         return $events;
@@ -209,6 +210,9 @@ class event_vault implements event_vault_interface {
             // Grouping 0 is all groups.
             return array_merge($carry, $groupings[0]);
         }, []);
+
+        // Always include the site events.
+        $courseids = $courseids ? array_merge($courseids, [SITEID]) : $courseids;
 
         return $this->get_events(
             null,
