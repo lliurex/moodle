@@ -60,8 +60,6 @@ override_dh_lintian:
 	# un-bundle libraries (symlinks created later via debian/links)
 	#rm debian/moodle/usr/share/moodle/lib/phpmailer/class.{phpmailer,smtp}.php
 	# set dir permissions
-	chown www-data:www-data debian/moodle/var/lib/moodle
-	chmod 0750 debian/moodle/var/lib/moodle
 	
 	dh_lintian
 
